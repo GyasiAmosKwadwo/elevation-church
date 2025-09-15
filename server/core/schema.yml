@@ -1,0 +1,7 @@
+openapi: 3.0.3
+info:
+  title: Elevation Church API
+  version: 1.0.0
+  description: API documentation for Elevation Church
+paths: {}
+components: {}
