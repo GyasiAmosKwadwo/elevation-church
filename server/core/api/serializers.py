@@ -1,5 +1,9 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import Sermon, Resource, Series, Event
+from datetime import date
+
+
 
 class ResourceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,11 +40,18 @@ class EventSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'days', 'end_date']
 
-    def get_days(self, obj):
+    @extend_schema_field(serializers.IntegerField())
+    def get_days(self, obj) -> int:
         return obj.days
 
-    def get_end_date(self, obj):
-        if obj.date and obj.days:
-            from datetime import timedelta
-            return obj.date + timedelta(days=obj.days - 1)
-        return None
+    """@extend_schema_field(serializers.DateField())
+    def get_end_date(self, obj) -> 'date':
+        from datetime import timedelta, date, datetime
+        base_date = obj.date
+        # Ensure base_date is a date object
+        if isinstance(base_date, datetime):
+            base_date = base_date.date()
+        if base_date and obj.days:
+            return base_date + timedelta(days=obj.days - 1)
+        return None  # type: ignore
+        """
