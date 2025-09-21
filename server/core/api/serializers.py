@@ -44,7 +44,7 @@ class EventSerializer(serializers.ModelSerializer):
     def get_days(self, obj) -> int:
         return obj.days
 
-    """@extend_schema_field(serializers.DateField())
+    @extend_schema_field(serializers.DateField())
     def get_end_date(self, obj) -> 'date':
         from datetime import timedelta, date, datetime
         base_date = obj.date
@@ -54,4 +54,3 @@ class EventSerializer(serializers.ModelSerializer):
         if base_date and obj.days:
             return base_date + timedelta(days=obj.days - 1)
         return None  # type: ignore
-        """

@@ -4,6 +4,8 @@ from rest_framework import generics
 from .models import Sermon, Resource, Series, Event
 from .serializers import SermonSerializer, ResourceSerializer, SeriesSerializer, EventSerializer
 from rest_framework.permissions import IsAdminUser
+from rest_framework.pagination import PageNumberPagination
+
 
 
 
@@ -15,6 +17,9 @@ class ListSermon(generics.ListAPIView):
     ordering = ['-date']
     filterset_fields = ['series__title', 'preacher']
     search_fields = ['title', 'description', 'preacher', 'series__title']
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 10
+    
 
 class DetailSermon(generics.RetrieveAPIView):
     queryset = Sermon.objects.all()
@@ -43,6 +48,9 @@ class ListResource(generics.ListAPIView):
     lookup_url_kwarg = 'resource_id'
     ordering = ['name']
     search_fields = ['name']
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 10
+
 
 class DetailResource(generics.RetrieveAPIView):
     queryset = Resource.objects.all()
@@ -71,6 +79,8 @@ class ListSeries(generics.ListAPIView):
     lookup_url_kwarg = 'series_id'
     ordering = ['-date']
     search_fields = ['title', 'description']
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 10
 
 class DetailSeries(generics.RetrieveAPIView):
     queryset = Series.objects.all()
@@ -99,6 +109,9 @@ class ListEvent(generics.ListAPIView):
     lookup_url_kwarg = 'event_id'
     ordering = ['-date', '-start_time']
     search_fields = ['name', 'description', 'location']
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 10
+    
 
 class DetailEvent(generics.RetrieveAPIView):
     queryset = Event.objects.all()
