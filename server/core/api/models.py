@@ -7,7 +7,7 @@ class Sermon(models.Model):
     preacher = models.CharField(max_length=100, default="Pastor Obed Agyiri", help_text="Enter the name of the preacher")
     podcast_link = models.URLField(default="https://www.youtube.com/watch?v=sjkrrmBnpGE&t=11s", help_text="Enter the podcast link of the sermon")
     resource = models.ForeignKey('Resource', on_delete=models.CASCADE, null=True, related_name='sermon', help_text="Enter any additional resources for the sermon")
-    series = models.ForeignKey('Series', on_delete=models.CASCADE, null=True, related_name='sermons', help_text="Select the series this sermon belongs to")
+    series = models.ForeignKey('Series', on_delete=models.CASCADE, null=True, related_name='sermon_series', help_text="Select the series this sermon belongs to")
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -24,8 +24,8 @@ class Resource(models.Model):
 class Series(models.Model):
     title = models.CharField(max_length=200, help_text="Enter the title of the series")
     description = models.CharField(max_length=700, help_text="Enter a brief description of the series")
-    image = models.ImageField(upload_to='series_images/', default='series_images/WhatsApp_Image_2024-03-06_at_20.16.33_424dfe04.jpg', help_text="Upload an image for the series")    
-    date = models.DateTimeField(auto_now_add=True)
+    available_sermons = models.ManyToManyField(Sermon, related_name='series_sermons', blank=True, help_text="Select sermons that belong to this series")
+    date = models.DateTimeField(auto_now_add=True, help_text="Date the series was created")
 
     class Meta:
         verbose_name_plural = "Series"
