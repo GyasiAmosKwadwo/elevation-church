@@ -1,16 +1,35 @@
-GET http://127.0.0.1:8000/api/events/ HTTP/1.1
+# to get authenticated user's details
+GET http://127.0.0.1:8000/auth/users/me/ HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU4ODE1MjY4LCJpYXQiOjE3NTg4MTM0NjgsImp0aSI6ImM3OTAzZDFjMmY1MjRiMGU5ZmY5MmE1ZGFjYjk1ZWMyIiwidXNlcl9pZCI6IjEifQ._qwQy5SeNNKyesE7qUOUGNhm3FiYCQj9_-S1D6h4k6g
 
 ###
 
-POST http://127.0.0.1:8000/api/token/ HTTP/1.1
+#FOR AUTHENTICATION TO GET JWT TOKEN
+
+POST http://127.0.0.1:8000/auth/jwt/create/ HTTP/1.1
 Content-Type: application/json
 
 {
 
     "username":"admin",
-    "email":"admin@gmail.com",
     "password":"admin1234"
 }
 
 ###
- 
+
+#TO CREATE A NEW SERMON AND ALL OTHER POST, CREATE, PUT, DELETE REQUESTS POSSIBLE FOR THE ADMIN
+
+POST http://127.0.0.1:8000/api/sermons/create/ HTTP/1.1
+Content-Type: application/json 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU4ODE1MjY4LCJpYXQiOjE3NTg4MTM0NjgsImp0aSI6ImM3OTAzZDFjMmY1MjRiMGU5ZmY5MmE1ZGFjYjk1ZWMyIiwidXNlcl9pZCI6IjEifQ._qwQy5SeNNKyesE7qUOUGNhm3FiYCQj9_-S1D6h4k6g
+
+{
+
+    "title": "Another One",
+    "description": "This is a description of the new sermon.",
+    "preacher": "Pastor John Doe",
+    "podcast_link": "https://www.example.com/new-sermon",
+    "resource": 1,
+    "series": 1
+}
+

@@ -80,7 +80,7 @@ class ListSeries(generics.ListAPIView):
     ordering = ['-date']
     search_fields = ['title', 'description']
     pagination_class = PageNumberPagination
-    PageNumberPagination.page_size = 10
+    
 
 class DetailSeries(generics.RetrieveAPIView):
     queryset = Series.objects.all()
