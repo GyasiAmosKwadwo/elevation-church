@@ -63,7 +63,7 @@ class SeriesSerializer(serializers.ModelSerializer):
     available_sermons = serializers.SerializerMethodField()
     class Meta:
         model = Series
-        fields = ['id', 'title', 'description', 'available_sermons']
+        fields = ['id', 'title', 'description', 'image', 'available_sermons']
         read_only_fields = ['id']
 
     def get_available_sermons(self, obj):

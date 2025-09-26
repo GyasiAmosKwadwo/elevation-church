@@ -25,10 +25,12 @@ class Series(models.Model):
     title = models.CharField(max_length=200, help_text="Enter the title of the series")
     description = models.CharField(max_length=700, help_text="Enter a brief description of the series")
     available_sermons = models.ManyToManyField(Sermon, related_name='series_sermons', blank=True, help_text="Select sermons that belong to this series")
+    image = models.ImageField(upload_to='series_images/', default='series_images/default_profile.jpg', help_text="Upload an image for the series")
     date = models.DateTimeField(auto_now_add=True, help_text="Date the series was created")
 
     class Meta:
         verbose_name_plural = "Series"
+        ordering = ['-date']
 
     def __str__(self):
         return self.title
