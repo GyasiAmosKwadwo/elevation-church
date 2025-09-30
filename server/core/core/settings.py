@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-6in-n6qyo#wj@l^-g1k1i1r-(m*1)_l*zbon0i&tz2%_i5zn4d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [".vercel.app"]
 
 
 # Application definition
@@ -63,7 +63,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://church-web.vercel.app",
+]
 
 ROOT_URLCONF = 'core.urls'
 
