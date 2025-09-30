@@ -24,6 +24,7 @@ class SermonSerializer(serializers.ModelSerializer):
             'podcast_link', 'series', 'date', 'resources', 'next_sermon', 'previous_sermon'
         ]
         read_only_fields = ['id', 'date', 'resources', 'next_sermon', 'previous_sermon']
+        
 
     def get_next_sermon(self, obj):
         series = self.context.get('series')

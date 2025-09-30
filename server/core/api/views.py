@@ -10,7 +10,7 @@ from rest_framework.pagination import PageNumberPagination
 
 
 class ListSermon(generics.ListAPIView):
-    queryset = Sermon.objects.all()
+    queryset = Sermon.objects.order_by('-date')
     serializer_class = SermonSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'sermon_id'
@@ -42,7 +42,7 @@ class UpdateSermon(generics.RetrieveUpdateDestroyAPIView):
     #Resources
 
 class ListResource(generics.ListAPIView):
-    queryset = Resource.objects.all()
+    queryset = Resource.objects.order_by('-name')
     serializer_class = ResourceSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'resource_id'
@@ -73,7 +73,7 @@ class UpdateResource(generics.RetrieveUpdateDestroyAPIView):
     #series
 
 class ListSeries(generics.ListAPIView):
-    queryset = Series.objects.all()
+    queryset = Series.objects.order_by('-date')
     serializer_class = SeriesSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'series_id'
@@ -103,7 +103,7 @@ class UpdateSeries(generics.RetrieveUpdateDestroyAPIView):
     #Events
 
 class ListEvent(generics.ListAPIView):
-    queryset = Event.objects.all()
+    queryset = Event.objects.order_by('-date')
     serializer_class = EventSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'event_id'
