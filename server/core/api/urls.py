@@ -23,5 +23,14 @@ urlpatterns = [
     path('events/<int:event_id>/', views.DetailEvent.as_view(), name='event-detail'),
     path('events/create/', views.CreateEvent.as_view(), name='event'),
     path('events/<int:event_id>/update/', views.UpdateEvent.as_view(), name='event-update'),
+    #Devotions
+    path('devotions/', views.ListDevotion.as_view(), name='devotion-list'),
+    path('devotions/<int:devotion_id>/', views.DetailDevotion.as_view(), name='devotion-detail'),
+    path('devotions/create/', views.CreateDevotion.as_view(), name='devotion'),
+    path('devotions/<int:devotion_id>/update/', views.UpdateDevotion.as_view(), name='devotion-update'),
+    #Reflections
+    path('reflections/', views.ListReflection.as_view(), name='reflection-list'),
+    path('reflections/<int:reflection_id>/', views.DetailReflection.as_view(), name='reflection-detail'),
+    path('reflections/create/', views.CreateReflection.as_view(), name='reflection'),   
     
 ]

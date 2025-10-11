@@ -8,6 +8,8 @@ class Sermon(models.Model):
     podcast_link = models.URLField(default="https://www.youtube.com/watch?v=sjkrrmBnpGE&t=11s", help_text="Enter the podcast link of the sermon")
     resource = models.ForeignKey('Resource', on_delete=models.CASCADE, null=True, related_name='sermon', help_text="Enter any additional resources for the sermon")
     series = models.ForeignKey('Series', on_delete=models.CASCADE, null=True, related_name='sermon_series', help_text="Select the series this sermon belongs to")
+    likes = models.IntegerField(default=0, help_text="Number of likes for this reflection")
+    comments = models.TextField(blank=True, help_text="Comments on the reflection")
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -26,6 +28,8 @@ class Series(models.Model):
     description = models.CharField(max_length=700, help_text="Enter a brief description of the series")
     available_sermons = models.ManyToManyField(Sermon, related_name='series_sermons', blank=True, help_text="Select sermons that belong to this series")
     image = models.ImageField(upload_to='series_images/', default='series_images/default_profile.jpg', help_text="Upload an image for the series")
+    likes = models.IntegerField(default=0, help_text="Number of likes for this Series")
+    thoughts=models.ManyToManyField('Reflection', related_name='series_thoughts', blank=True, help_text="Add thoughts on this series")
     date = models.DateTimeField(auto_now_add=True, help_text="Date the series was created")
 
     class Meta:
@@ -48,3 +52,25 @@ class Event(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Devotion(models.Model):
+    title = models.CharField(max_length=200, help_text="Enter the title of the devotional")
+    Bible_verse = models.CharField(max_length=300, help_text="Enter the Bible verse for the devotional")
+    content = models.TextField(help_text="Enter the content of the devotional")
+    thumbnail = models.ImageField(upload_to='devotion_thumbnails/', default='devotion_thumbnails/default_devotion_thumbnail.jpg', help_text="Upload a thumbnail for the devotional")
+    reflection = models.ManyToManyField('Reflection', related_name='devotion_reflections', blank=True, help_text="Add reflections for this devotional")
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+    
+class Reflection(models.Model):
+    name = models.CharField(max_length=200, help_text="Enter your name here")
+    email = models.EmailField(help_text="Enter your email here")
+    content = models.TextField(help_text="Enter the content of the reflection")
+    likes = models.IntegerField(default=0, help_text="Number of likes for this reflection")
+    comments = models.TextField(blank=True, help_text="Comments on the reflection")
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.content[:10] + '...' if len(self.content) > 10 else self.content

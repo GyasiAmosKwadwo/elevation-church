@@ -1,8 +1,7 @@
 from django.shortcuts import render
-from django.http import HttpResponse
 from rest_framework import generics
-from .models import Sermon, Resource, Series, Event
-from .serializers import SermonSerializer, ResourceSerializer, SeriesSerializer, EventSerializer
+from .models import Sermon, Resource, Series, Event, Devotion, Reflection
+from .serializers import SermonSerializer, ResourceSerializer, SeriesSerializer,EventSerializer, DevotionSerializer, ReflectionSerializer
 from rest_framework.permissions import IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 
@@ -103,7 +102,7 @@ class UpdateSeries(generics.RetrieveUpdateDestroyAPIView):
     #Events
 
 class ListEvent(generics.ListAPIView):
-    queryset = Event.objects.order_by('-date')
+    queryset = Event.objects.order_by('date')
     serializer_class = EventSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'event_id'
@@ -130,4 +129,65 @@ class UpdateEvent(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminUser]
     lookup_field = 'id'
     lookup_url_kwarg = 'event_id'
+
+
+#Devotions
+class ListDevotion(generics.ListAPIView):
+    queryset = Devotion.objects.order_by('-date')
+    serializer_class = DevotionSerializer
+    lookup_field = 'id'
+    lookup_url_kwarg = 'devotion_id'
+    ordering = ['-date']
+    search_fields = ['title', 'Bible_verse', 'content', 'date']
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 10
+
+class DetailDevotion(generics.RetrieveAPIView):
+    queryset = Devotion.objects.all()
+    serializer_class = DevotionSerializer
+    lookup_field = 'id'
+    lookup_url_kwarg = 'devotion_id'
+
+class CreateDevotion(generics.CreateAPIView):
+    queryset = Devotion.objects.all()
+    serializer_class = DevotionSerializer
+    permission_classes = [IsAdminUser]
+
+class UpdateDevotion(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Devotion.objects.all()
+    serializer_class = DevotionSerializer
+    permission_classes = [IsAdminUser]
+    lookup_field = 'id'
+    lookup_url_kwarg = 'devotion_id'
+
+#Reflections
+class ListReflection(generics.ListAPIView):
+    queryset = Reflection.objects.order_by('-date')
+    serializer_class = ReflectionSerializer
+    lookup_field = 'id'
+    lookup_url_kwarg = 'reflection_id'
+    ordering = ['-date']
+    search_fields = ['name', 'content', 'date']
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 10
+
+class DetailReflection(generics.RetrieveAPIView):
+    queryset = Reflection.objects.all()
+    serializer_class = ReflectionSerializer
+    lookup_field = 'id'
+    lookup_url_kwarg = 'reflection_id'
+
+class CreateReflection(generics.CreateAPIView):
+    queryset = Reflection.objects.all()
+    serializer_class = ReflectionSerializer
+    permission_classes = []
+
+class UpdateReflection(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Reflection.objects.all()
+    serializer_class = ReflectionSerializer
+    permission_classes = []
+    lookup_field = 'id'
+    lookup_url_kwarg = 'reflection_id'
+
+
 

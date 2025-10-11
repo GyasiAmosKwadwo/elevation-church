@@ -1,10 +1,15 @@
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
-from .models import Sermon, Resource, Series, Event
+from .models import Sermon, Resource, Series, Event, Devotion, Reflection
 from datetime import date
 from django.urls import reverse
 
 
+class ReflectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reflection
+        fields = ['id', 'name', 'email', 'likes', 'comments', 'content', 'date']
+        read_only_fields = ['id', 'date']
 
 class ResourceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,6 +19,7 @@ class ResourceSerializer(serializers.ModelSerializer):
 
 class SermonSerializer(serializers.ModelSerializer):
     resources = ResourceSerializer(many=True, read_only=True)
+    reflection = ReflectionSerializer(many=True, read_only=True)
     next_sermon = serializers.SerializerMethodField()
     previous_sermon = serializers.SerializerMethodField()
 
@@ -21,7 +27,7 @@ class SermonSerializer(serializers.ModelSerializer):
         model = Sermon
         fields = [
             'id', 'title', 'description', 'preacher', 'video_link',
-            'podcast_link', 'series', 'date', 'resources', 'next_sermon', 'previous_sermon'
+            'podcast_link', 'series', 'date', 'resources', 'likes','next_sermon', 'previous_sermon', 'reflection'
         ]
         read_only_fields = ['id', 'date', 'resources', 'next_sermon', 'previous_sermon']
         
@@ -64,7 +70,7 @@ class SeriesSerializer(serializers.ModelSerializer):
     available_sermons = serializers.SerializerMethodField()
     class Meta:
         model = Series
-        fields = ['id', 'title', 'description', 'image', 'available_sermons']
+        fields = ['id', 'title', 'description', 'image', 'thoughts','available_sermons']
         read_only_fields = ['id']
 
     def get_available_sermons(self, obj):
@@ -98,3 +104,19 @@ class EventSerializer(serializers.ModelSerializer):
         if base_date and obj.days:
             return base_date + timedelta(days=obj.days - 1)
         return None  # type: ignore
+    
+# class DevotionSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Devotion
+#         fields = ['id', 'title', 'Bible_verse', 'content', 'thumbnail', 'date']
+#         read_only_fields = ['id', 'date']
+
+
+class DevotionSerializer(serializers.ModelSerializer):
+    reflections = ReflectionSerializer(many=True, read_only=True)
+    class Meta:
+        model = Devotion
+        fields = ['id', 'title', 'Bible_verse', 'content', 'thumbnail', 'date', 'reflections']
+        read_only_fields = ['id', 'date'] 
+
+
