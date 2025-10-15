@@ -1,9 +1,9 @@
-from django.shortcuts import render
 from rest_framework import generics
-from .models import Sermon, Resource, Series, Event, Devotion, Reflection
-from .serializers import SermonSerializer, ResourceSerializer, SeriesSerializer,EventSerializer, DevotionSerializer, ReflectionSerializer
-from rest_framework.permissions import IsAdminUser
+from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement
+from .serializers import SermonSerializer, ResourceSerializer, SeriesSerializer,EventSerializer, DevotionSerializer, ReflectionSerializer, PrayerRequestSerializer, AnnouncementSerializer
+from rest_framework.permissions import IsAdminUser, AllowAny 
 from rest_framework.pagination import PageNumberPagination
+
 
 
 
@@ -188,6 +188,64 @@ class UpdateReflection(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = []
     lookup_field = 'id'
     lookup_url_kwarg = 'reflection_id'
+
+class ListPrayerRequest(generics.ListAPIView):
+    queryset = Prayer_request.objects.order_by('-date')
+    serializer_class = PrayerRequestSerializer
+    permission_classes = [IsAdminUser]
+    lookup_field = 'id'
+    lookup_url_kwarg = 'prayer_request_id'
+    ordering = ['-date']
+    search_fields = ['name', 'subject', 'date']
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 10
+
+class DetailPrayerRequest(generics.RetrieveAPIView):
+    queryset = Prayer_request.objects.all()
+    serializer_class = PrayerRequestSerializer
+    permission_classes = [IsAdminUser]
+    lookup_field = 'id'
+    lookup_url_kwarg = 'prayer_request_id'
+
+class CreatePrayerRequest(generics.CreateAPIView):
+    queryset = Prayer_request.objects.all()
+    serializer_class = PrayerRequestSerializer
+    permission_classes = [AllowAny]
+
+class DeletePrayerRequest(generics.RetrieveDestroyAPIView):
+    queryset = Prayer_request.objects.all()
+    serializer_class = PrayerRequestSerializer
+    permission_classes = [IsAdminUser]
+    lookup_field = 'id'
+    lookup_url_kwarg = 'prayer_request_id'
+
+class ListAnnouncement(generics.ListAPIView):
+    queryset = Announcement.objects.order_by('-date')
+    serializer_class = AnnouncementSerializer
+    lookup_field = 'id'
+    lookup_url_kwarg = 'announcement_id'
+    ordering = ['-date']
+    search_fields = ['title', 'content', 'date']
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 10
+
+class DetailAnnouncement(generics.RetrieveAPIView):
+    queryset = Announcement.objects.all()
+    serializer_class = AnnouncementSerializer
+    lookup_field = 'id'
+    lookup_url_kwarg = 'announcement_id'
+
+class CreateAnnouncement(generics.CreateAPIView):
+    queryset = Announcement.objects.all()
+    serializer_class = AnnouncementSerializer
+    permission_classes = [IsAdminUser]
+
+class UpdateAnnouncement(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Announcement.objects.all()
+    serializer_class = AnnouncementSerializer
+    permission_classes = [IsAdminUser]
+    lookup_field = 'id'
+    lookup_url_kwarg = 'announcement_id'
 
 
 

@@ -31,6 +31,22 @@ urlpatterns = [
     #Reflections
     path('reflections/', views.ListReflection.as_view(), name='reflection-list'),
     path('reflections/<int:reflection_id>/', views.DetailReflection.as_view(), name='reflection-detail'),
-    path('reflections/create/', views.CreateReflection.as_view(), name='reflection'),   
+    path('reflections/create/', views.CreateReflection.as_view(), name='reflection'),
+    path('reflections/<int:reflection_id>/update/', views.UpdateReflection.as_view(), name='reflection-update'),
+
+    #Prayer Requests
+    path('prayer-requests/', views.ListPrayerRequest.as_view(), name='prayer-request-list'),
+    path('prayer-requests/<int:prayer_request_id>/', views.DetailPrayerRequest.as_view(), name='prayer-request-detail'),
+    path('prayer-requests/create/', views.CreatePrayerRequest.as_view(), name='prayer-request'),
+    path('prayer-requests/<int:prayer_request_id>/delete/', views.DeletePrayerRequest.as_view(), name='prayer-request-delete'), 
+
+    #Announcements
+    path('announcements/', views.ListAnnouncement.as_view(), name='announcement-list'),
+    path('announcements/<int:announcement_id>/', views.DetailAnnouncement.as_view(), name='announcement-detail'),
+    path('announcements/create/', views.CreateAnnouncement.as_view(), name='announcement'),     
+    path('announcements/<int:announcement_id>/update/', views.UpdateAnnouncement.as_view(), name='announcement-update'),
+      
+
+
     
 ]
