@@ -1,6 +1,8 @@
 from django.db import models
+import uuid
 
 class Sermon(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200, help_text="Enter the title of the sermon")
     description = models.CharField(max_length=700, help_text="Enter a brief description of the sermon")
     video_link = models.URLField(default="https://www.youtube.com/watch?v=sjkrrmBnpGE&t=11s", help_text="Enter the video link of the sermon")
@@ -16,6 +18,7 @@ class Sermon(models.Model):
         return self.title
 
 class Resource(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=300, help_text="Enter the name of the resource")
     purchase_link = models.URLField(help_text="Enter the purchase link of the resource")
     price = models.DecimalField(max_digits=8, decimal_places=2, help_text="Enter the price of the resource")
@@ -24,6 +27,7 @@ class Resource(models.Model):
         return self.name
 
 class Series(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200, help_text="Enter the title of the series")
     description = models.CharField(max_length=700, help_text="Enter a brief description of the series")
     available_sermons = models.ManyToManyField(Sermon, related_name='series_sermons', blank=True, help_text="Select sermons that belong to this series")
@@ -40,6 +44,7 @@ class Series(models.Model):
         return self.title
 
 class Event(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(default="Congregational meeting", max_length=200, help_text="Enter the name of the event")
     description = models.CharField(max_length=700, help_text="Enter a brief description of the event")
     flyer = models.ImageField(upload_to='event_flyers/', default='event_flyers/default_profile.jpg', help_text="Upload a flyer for the event")    
@@ -54,6 +59,7 @@ class Event(models.Model):
         return self.name
     
 class Devotion(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200, help_text="Enter the title of the devotional")
     Bible_verse = models.CharField(max_length=300, help_text="Enter the Bible verse for the devotional")
     content = models.TextField(help_text="Enter the content of the devotional")
@@ -65,8 +71,8 @@ class Devotion(models.Model):
         return self.title
     
 class Reflection(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, help_text="Enter your name here")
-    email = models.EmailField(help_text="Enter your email here")
     content = models.TextField(help_text="Enter the content of the reflection")
     likes = models.IntegerField(default=0, help_text="Number of likes for this reflection")
     comments = models.TextField(blank=True, help_text="Comments on the reflection")
@@ -74,3 +80,23 @@ class Reflection(models.Model):
 
     def __str__(self):
         return self.content[:10] + '...' if len(self.content) > 10 else self.content
+    
+class Prayer_request(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200, help_text="Enter your name here")
+    subject = models.TextField(help_text="Enter the content of your prayer request")
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.subject
+    
+class Announcement(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=200, help_text="Enter the title of the announcement")
+    content = models.TextField(help_text="Enter the content of the announcement")
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+    
+

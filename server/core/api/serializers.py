@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
-from .models import Sermon, Resource, Series, Event, Devotion, Reflection
+from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement
 from datetime import date
 from django.urls import reverse
 
@@ -119,4 +119,16 @@ class DevotionSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'Bible_verse', 'content', 'thumbnail', 'date', 'reflections']
         read_only_fields = ['id', 'date'] 
 
+class PrayerRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Prayer_request
+        fields = ['id', 'name', 'subject', 'date']
+        read_only_fields = ['id', 'date']
+
+
+class AnnouncementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Announcement
+        fields = ['id', 'title', 'content', 'date']
+        read_only_fields = ['id', 'date']
 
