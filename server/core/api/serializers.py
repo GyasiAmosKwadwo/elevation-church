@@ -8,7 +8,7 @@ from django.urls import reverse
 class ReflectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reflection
-        fields = ['id', 'name', 'email', 'likes', 'comments', 'content', 'date']
+        fields = ['id', 'name', 'likes', 'comments', 'content', 'date']
         read_only_fields = ['id', 'date']
 
 class ResourceSerializer(serializers.ModelSerializer):
