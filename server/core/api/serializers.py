@@ -1,8 +1,13 @@
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
-from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement
+from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement, Live_stream
 from datetime import date
 from django.urls import reverse
+
+
+class BibleVerseSerializer(serializers.Serializer):
+    quote = serializers.CharField(max_length=300, help_text="Bible verse reference, e.g., 'John 10:30'")
+    memory_text = serializers.CharField(help_text="The content of the Bible verse")
 
 
 class ReflectionSerializer(serializers.ModelSerializer):
@@ -113,11 +118,12 @@ class EventSerializer(serializers.ModelSerializer):
 
 
 class DevotionSerializer(serializers.ModelSerializer):
+    Bible_verse = BibleVerseSerializer()
     reflections = ReflectionSerializer(many=True, read_only=True)
     class Meta:
         model = Devotion
         fields = ['id', 'title', 'Bible_verse', 'content', 'thumbnail', 'date', 'reflections']
-        read_only_fields = ['id', 'date'] 
+        read_only_fields = ['id']
 
 class PrayerRequestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -131,4 +137,11 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         model = Announcement
         fields = ['id', 'title', 'content', 'date']
         read_only_fields = ['id', 'date']
+
+class LiveStreamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Live_stream
+        fields = ['id', 'title', 'description', 'stream_link', 'status', 'reactions', 'comments', 'date']
+        read_only_fields = ['id', 'date']
+
 

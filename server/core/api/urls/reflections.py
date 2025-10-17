@@ -1,0 +1,9 @@
+from django.urls import path
+from api import views
+
+urlpatterns = [
+    path('', views.ListReflection.as_view(), name='reflection-list'),
+    path('<int:reflection_id>/', views.DetailReflection.as_view(), name='reflection-detail'),
+    path('create/', views.CreateReflection.as_view(), name='reflection'),
+    path('<int:reflection_id>/update/', views.UpdateReflection.as_view(), name='reflection-update'),
+]
