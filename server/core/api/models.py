@@ -61,7 +61,7 @@ class Event(models.Model):
 class Devotion(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200, help_text="Enter the title of the devotional")
-    Bible_verse = models.CharField(max_length=300, help_text="Enter the Bible verse for the devotional")
+    Bible_verse = models.JSONField(default=dict, help_text="Enter the Bible verse as a JSON object with 'reference' and 'verse_content'")
     content = models.TextField(help_text="Enter the content of the devotional")
     thumbnail = models.ImageField(upload_to='devotion_thumbnails/', default='devotion_thumbnails/default_devotion_thumbnail.jpg', help_text="Upload a thumbnail for the devotional")
     reflection = models.ManyToManyField('Reflection', related_name='devotion_reflections', blank=True, help_text="Add reflections for this devotional")
@@ -94,6 +94,25 @@ class Announcement(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200, help_text="Enter the title of the announcement")
     content = models.TextField(help_text="Enter the content of the announcement")
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+    
+STATUS_CHOICES = [
+    ('live', 'Live'),
+    ('upcoming', 'Upcoming'),
+    ('past', 'Past'),
+]
+    
+class Live_stream(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=200, help_text="Enter the title of the live stream")
+    description = models.CharField(max_length=700, help_text="Enter a brief description of the live stream")
+    stream_link = models.URLField(default="https://www.youtube.com/watch?v=sjkrrmBnpGE&t=11s", help_text="Enter the stream link of the live stream")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='upcoming', help_text="Status of the live stream")
+    reactions = models.IntegerField(default=0, help_text="Number of reactions for this live stream")
+    comments = models.TextField(blank=True, help_text="Comments on the live stream")
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

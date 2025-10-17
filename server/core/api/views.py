@@ -1,6 +1,6 @@
 from rest_framework import generics
-from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement
-from .serializers import SermonSerializer, ResourceSerializer, SeriesSerializer,EventSerializer, DevotionSerializer, ReflectionSerializer, PrayerRequestSerializer, AnnouncementSerializer
+from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement, Live_stream
+from .serializers import SermonSerializer, ResourceSerializer, SeriesSerializer,EventSerializer, DevotionSerializer, ReflectionSerializer, PrayerRequestSerializer, AnnouncementSerializer, LiveStreamSerializer
 from rest_framework.permissions import IsAdminUser, AllowAny 
 from rest_framework.pagination import PageNumberPagination
 
@@ -248,4 +248,32 @@ class UpdateAnnouncement(generics.RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'announcement_id'
 
 
+#Live Streams
+class ListLiveStream(generics.ListAPIView):
+    queryset = Live_stream.objects.order_by('-date')
+    serializer_class = LiveStreamSerializer
+    lookup_field = 'id'
+    lookup_url_kwarg = 'live_stream_id'
+    ordering = ['-date']
+    search_fields = ['title', 'description', 'status', 'date']
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 10
+
+class DetailLiveStream(generics.RetrieveAPIView):
+    queryset = Live_stream.objects.all()
+    serializer_class = LiveStreamSerializer
+    lookup_field = 'id'
+    lookup_url_kwarg = 'live_stream_id'
+
+class CreateLiveStream(generics.CreateAPIView):
+    queryset = Live_stream.objects.all()
+    serializer_class = LiveStreamSerializer
+    permission_classes = [IsAdminUser]
+
+class UpdateLiveStream(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Live_stream.objects.all()
+    serializer_class = LiveStreamSerializer
+    permission_classes = [IsAdminUser]
+    lookup_field = 'id'
+    lookup_url_kwarg = 'live_stream_id'
 
