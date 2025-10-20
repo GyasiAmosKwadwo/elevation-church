@@ -7,7 +7,7 @@ class Sermon(models.Model):
     description = models.CharField(max_length=700, help_text="Enter a brief description of the sermon")
     video_link = models.URLField(default="https://www.youtube.com/watch?v=sjkrrmBnpGE&t=11s", help_text="Enter the video link of the sermon")
     preacher = models.CharField(max_length=100, default="Pastor Obed Agyiri", help_text="Enter the name of the preacher")
-    podcast_link = models.URLField(default="https://www.youtube.com/watch?v=sjkrrmBnpGE&t=11s", help_text="Enter the podcast link of the sermon")
+    podcast_link = models.URLField(blank=True, help_text="Enter the podcast link of the sermon")
     resource = models.ForeignKey('Resource', on_delete=models.CASCADE, null=True, related_name='sermon', help_text="Enter any additional resources for the sermon")
     series = models.ForeignKey('Series', on_delete=models.CASCADE, null=True, related_name='sermon_series', help_text="Select the series this sermon belongs to")
     likes = models.IntegerField(default=0, help_text="Number of likes for this reflection")

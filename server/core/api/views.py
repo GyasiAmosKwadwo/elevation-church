@@ -11,8 +11,6 @@ from rest_framework.pagination import PageNumberPagination
 class ListSermon(generics.ListAPIView):
     queryset = Sermon.objects.order_by('-date')
     serializer_class = SermonSerializer
-    lookup_field = 'id'
-    lookup_url_kwarg = 'sermon_id'
     ordering = ['-date']
     filterset_fields = ['series__title', 'preacher']
     search_fields = ['title', 'description', 'preacher', 'series__title']
@@ -43,8 +41,6 @@ class UpdateSermon(generics.RetrieveUpdateDestroyAPIView):
 class ListResource(generics.ListAPIView):
     queryset = Resource.objects.order_by('-name')
     serializer_class = ResourceSerializer
-    lookup_field = 'id'
-    lookup_url_kwarg = 'resource_id'
     ordering = ['name']
     search_fields = ['name']
     pagination_class = PageNumberPagination
@@ -74,8 +70,6 @@ class UpdateResource(generics.RetrieveUpdateDestroyAPIView):
 class ListSeries(generics.ListAPIView):
     queryset = Series.objects.order_by('-date')
     serializer_class = SeriesSerializer
-    lookup_field = 'id'
-    lookup_url_kwarg = 'series_id'
     ordering = ['-date']
     search_fields = ['title', 'description']
     pagination_class = PageNumberPagination
@@ -104,8 +98,6 @@ class UpdateSeries(generics.RetrieveUpdateDestroyAPIView):
 class ListEvent(generics.ListAPIView):
     queryset = Event.objects.order_by('date')
     serializer_class = EventSerializer
-    lookup_field = 'id'
-    lookup_url_kwarg = 'event_id'
     ordering = ['-date', '-start_time']
     search_fields = ['name', 'description', 'location']
     pagination_class = PageNumberPagination
@@ -135,8 +127,6 @@ class UpdateEvent(generics.RetrieveUpdateDestroyAPIView):
 class ListDevotion(generics.ListAPIView):
     queryset = Devotion.objects.order_by('-date')
     serializer_class = DevotionSerializer
-    lookup_field = 'id'
-    lookup_url_kwarg = 'devotion_id'
     ordering = ['-date']
     search_fields = ['title', 'Bible_verse', 'content', 'date']
     pagination_class = PageNumberPagination
@@ -164,8 +154,6 @@ class UpdateDevotion(generics.RetrieveUpdateDestroyAPIView):
 class ListReflection(generics.ListAPIView):
     queryset = Reflection.objects.order_by('-date')
     serializer_class = ReflectionSerializer
-    lookup_field = 'id'
-    lookup_url_kwarg = 'reflection_id'
     ordering = ['-date']
     search_fields = ['name', 'content', 'date']
     pagination_class = PageNumberPagination
@@ -193,8 +181,6 @@ class ListPrayerRequest(generics.ListAPIView):
     queryset = Prayer_request.objects.order_by('-date')
     serializer_class = PrayerRequestSerializer
     permission_classes = [IsAdminUser]
-    lookup_field = 'id'
-    lookup_url_kwarg = 'prayer_request_id'
     ordering = ['-date']
     search_fields = ['name', 'subject', 'date']
     pagination_class = PageNumberPagination
@@ -222,8 +208,6 @@ class DeletePrayerRequest(generics.RetrieveDestroyAPIView):
 class ListAnnouncement(generics.ListAPIView):
     queryset = Announcement.objects.order_by('-date')
     serializer_class = AnnouncementSerializer
-    lookup_field = 'id'
-    lookup_url_kwarg = 'announcement_id'
     ordering = ['-date']
     search_fields = ['title', 'content', 'date']
     pagination_class = PageNumberPagination
@@ -252,8 +236,6 @@ class UpdateAnnouncement(generics.RetrieveUpdateDestroyAPIView):
 class ListLiveStream(generics.ListAPIView):
     queryset = Live_stream.objects.order_by('-date')
     serializer_class = LiveStreamSerializer
-    lookup_field = 'id'
-    lookup_url_kwarg = 'live_stream_id'
     ordering = ['-date']
     search_fields = ['title', 'description', 'status', 'date']
     pagination_class = PageNumberPagination
