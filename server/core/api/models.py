@@ -31,7 +31,7 @@ class Series(models.Model):
     title = models.CharField(max_length=200, help_text="Enter the title of the series")
     description = models.CharField(max_length=700, help_text="Enter a brief description of the series")
     available_sermons = models.ManyToManyField(Sermon, related_name='series_sermons', blank=True, help_text="Select sermons that belong to this series")
-    image = models.ImageField(upload_to='series_images/', default='series_images/default_profile.jpg', help_text="Upload an image for the series")
+    image = models.ImageField(upload_to='series_images/', default='https://www.freepik.com/free-photo/woman-praying-her-loved-ones_12690245.htm#fromView=search&page=1&position=49&uuid=b8c3c77b-8227-4daf-b533-f58011aa9874&query=bible+studies', help_text="Upload an image for the series")
     likes = models.IntegerField(default=0, help_text="Number of likes for this Series")
     thoughts=models.ManyToManyField('Reflection', related_name='series_thoughts', blank=True, help_text="Add thoughts on this series")
     date = models.DateTimeField(auto_now_add=True, help_text="Date the series was created")
@@ -47,7 +47,7 @@ class Event(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(default="Congregational meeting", max_length=200, help_text="Enter the name of the event")
     description = models.CharField(max_length=700, help_text="Enter a brief description of the event")
-    flyer = models.ImageField(upload_to='event_flyers/', default='event_flyers/default_profile.jpg', help_text="Upload a flyer for the event")    
+    flyer = models.ImageField(upload_to='event_flyers/', default='https://www.freepik.com/free-photo/empty-christian-church-building_144641216.htm#fromView=search&page=1&position=1&uuid=7df8b822-77d5-4328-b319-154627617e08&query=church', help_text="Upload a flyer for the event")    
     location = models.CharField(max_length=300, help_text="Enter the location of the event")
     date= models.DateField(help_text="Enter the start date of the event")
     days = models.IntegerField(default=1, help_text="Number of days the event lasts")
@@ -60,12 +60,14 @@ class Event(models.Model):
     
 class Devotion(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    #id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200, help_text="Enter the title of the devotional")
     Bible_verse = models.JSONField(default=dict, help_text="Enter the Bible verse as a JSON object with 'reference' and 'verse_content'")
     content = models.TextField(help_text="Enter the content of the devotional")
-    thumbnail = models.ImageField(upload_to='devotion_thumbnails/', default='devotion_thumbnails/default_devotion_thumbnail.jpg', help_text="Upload a thumbnail for the devotional")
+    thumbnail = models.ImageField(upload_to='devotion_thumbnails/', default='https://www.freepik.com/free-photo/young-woman-being-spiritual-home_12690260.htm', help_text="Upload a thumbnail for the devotional")
     reflection = models.ManyToManyField('Reflection', related_name='devotion_reflections', blank=True, help_text="Add reflections for this devotional")
     date = models.DateTimeField(auto_now_add=True)
+    
 
     def __str__(self):
         return self.title

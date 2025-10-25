@@ -103,7 +103,7 @@ class EventSerializer(serializers.ModelSerializer):
     def get_end_date(self, obj) -> 'date':
         from datetime import timedelta, date, datetime
         base_date = obj.date
-        # Ensure base_date is a date object
+      
         if isinstance(base_date, datetime):
             base_date = base_date.date()
         if base_date and obj.days:
