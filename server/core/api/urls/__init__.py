@@ -11,7 +11,7 @@ urlpatterns = [
     path('reflections/', include(reflections.urlpatterns)),
     path('announcements/', include(announcements.urlpatterns)),
     path('live-streams/', include(live_streams.urlpatterns)),
-    path('admins/', include(admins.urlpatterns)),
+    path('staff/', include(admins.urlpatterns)),
 
 
 ]

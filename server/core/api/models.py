@@ -83,6 +83,7 @@ class Reflection(models.Model):
         'Devotion',
         on_delete=models.CASCADE,
         null=False,
+        blank=False,
         related_name='reflections',
         help_text="Select the devotion this reflection belongs to"
     )

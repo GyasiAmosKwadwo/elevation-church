@@ -218,5 +218,6 @@ SPECTACULAR_SETTINGS = {
         {'name': 'Announcements'},
         {'name': 'Live Streams'},
         {'name': 'Auth'},
+        {'name': 'Staff'},
     ],
 }

@@ -191,22 +191,20 @@ class LiveStreamSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
-class AdminUserSerializer(serializers.ModelSerializer):
+class StaffUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    is_superuser = serializers.BooleanField(required=False, default=False)
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'username', 'email', 'password', 'is_staff', 'is_superuser', 'date_joined']
+        fields = ['id', 'username', 'email', 'password', 'is_staff', 'date_joined']
         read_only_fields = ['id', 'is_staff', 'date_joined']
 
     def create(self, validated_data):
-        is_superuser = validated_data.pop('is_superuser', False)
         password = validated_data.pop('password')
         User = get_user_model()
         user = User(**validated_data)
         user.is_staff = True
-        user.is_superuser = bool(is_superuser)
+        user.is_superuser = False
         user.set_password(password)
         user.save()
         return user

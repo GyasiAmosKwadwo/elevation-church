@@ -1,7 +1,7 @@
 from rest_framework import generics
 from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement, Live_stream
-from .serializers import SermonSerializer, ResourceSerializer, SeriesSerializer,EventSerializer, DevotionSerializer, ReflectionSerializer, PrayerRequestSerializer, AnnouncementSerializer, LiveStreamSerializer, AdminUserSerializer
-from rest_framework.permissions import IsAdminUser, AllowAny 
+from .serializers import SermonSerializer, ResourceSerializer, SeriesSerializer,EventSerializer, DevotionSerializer, ReflectionSerializer, PrayerRequestSerializer, AnnouncementSerializer, LiveStreamSerializer, StaffUserSerializer
+from rest_framework.permissions import IsAdminUser, AllowAny, BasePermission 
 from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
@@ -298,18 +298,24 @@ class UpdateLiveStream(generics.RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'live_stream_id'
 
 
-@extend_schema(tags=['Admin'])
-class CreateAdminUser(generics.CreateAPIView):
-    serializer_class = AdminUserSerializer
-    permission_classes = [IsAdminUser]
+class SuperUserOnly(BasePermission):
+    def has_permission(self, request, view):
+        u = request.user
+        return bool(u and u.is_authenticated and u.is_superuser)
+
+
+@extend_schema(tags=['Staff'])
+class CreateStaffUser(generics.CreateAPIView):
+    serializer_class = StaffUserSerializer
+    permission_classes = [SuperUserOnly]
 
     def get_queryset(self):
         return get_user_model().objects.none()
 
 
-@extend_schema(tags=['Admin'])
-class DeleteAdminUser(generics.DestroyAPIView):
-    permission_classes = [IsAdminUser]
+@extend_schema(tags=['Staff'])
+class DeleteStaffUser(generics.DestroyAPIView):
+    permission_classes = [SuperUserOnly]
 
     def get_queryset(self):
         User = get_user_model()
@@ -320,10 +326,9 @@ class DeleteAdminUser(generics.DestroyAPIView):
         return generics.get_object_or_404(self.get_queryset(), pk=self.kwargs.get('user_id'))
 
     def perform_destroy(self, instance):
-        # Prevent deleting self to avoid locking out the only admin
         request_user = self.request.user
         if instance.pk == getattr(request_user, 'pk', None):
             from rest_framework.exceptions import ValidationError
-            raise ValidationError('Admins cannot delete their own account.')
+            raise ValidationError('You cannot delete your own account.')
         instance.delete()
 
