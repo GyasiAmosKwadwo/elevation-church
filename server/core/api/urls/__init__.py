@@ -1,5 +1,5 @@
 from django.urls import path, include
-from . import events, sermons, series, resources, devotions, prayer_requests, reflections, announcements, live_streams
+from . import events, sermons, series, resources, devotions, prayer_requests, reflections, announcements, live_streams, admins
 
 urlpatterns = [
     path('events/', include(events.urlpatterns)),
@@ -11,6 +11,7 @@ urlpatterns = [
     path('reflections/', include(reflections.urlpatterns)),
     path('announcements/', include(announcements.urlpatterns)),
     path('live-streams/', include(live_streams.urlpatterns)),
+    path('admins/', include(admins.urlpatterns)),
 
 
 ]

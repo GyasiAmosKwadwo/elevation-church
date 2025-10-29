@@ -64,24 +64,33 @@ class Devotion(models.Model):
     title = models.CharField(max_length=200, help_text="Enter the title of the devotional")
     Bible_verse = models.JSONField(default=dict, help_text="Enter the Bible verse as a JSON object with 'reference' and 'verse_content'")
     content = models.TextField(help_text="Enter the content of the devotional")
-    thumbnail = models.ImageField(upload_to='devotion_thumbnails/', default='https://www.freepik.com/free-photo/young-woman-being-spiritual-home_12690260.htm', help_text="Upload a thumbnail for the devotional")
-    reflection = models.ManyToManyField('Reflection', related_name='devotion_reflections', blank=True, help_text="Add reflections for this devotional")
+    thumbnail = models.ImageField(upload_to='devotion_thumbnails/', null = True, help_text="Upload a thumbnail for the devotional")
+    #reflection = models.ManyToManyField('Reflection', related_name='devotion_reflections', blank=True, help_text="Add reflections for this devotional")
     date = models.DateTimeField(auto_now_add=True)
     
 
     def __str__(self):
         return self.title
     
+
 class Reflection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, help_text="Enter your name here")
     content = models.TextField(help_text="Enter the content of the reflection")
     likes = models.IntegerField(default=0, help_text="Number of likes for this reflection")
     comments = models.TextField(blank=True, help_text="Comments on the reflection")
+    devotion = models.ForeignKey(
+        'Devotion',
+        on_delete=models.CASCADE,
+        null=False,
+        related_name='reflections',
+        help_text="Select the devotion this reflection belongs to"
+    )
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.content[:10] + '...' if len(self.content) > 10 else self.content
+
     
 class Prayer_request(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -115,7 +124,7 @@ class Live_stream(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='upcoming', help_text="Status of the live stream")
     reactions = models.IntegerField(default=0, help_text="Number of reactions for this live stream")
     comments = models.TextField(blank=True, help_text="Comments on the live stream")
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=False)
 
     def __str__(self):
         return self.title

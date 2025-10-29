@@ -3,17 +3,18 @@ from drf_spectacular.utils import extend_schema_field
 from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement, Live_stream
 from datetime import date
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 
 
 class BibleVerseSerializer(serializers.Serializer):
-    quote = serializers.CharField(max_length=300, help_text="Bible verse reference, e.g., 'John 10:30'")
-    memory_text = serializers.CharField(help_text="The content of the Bible verse")
+    reference = serializers.CharField(max_length=300, required=False, allow_blank=True, allow_null=True, help_text="Bible verse reference, e.g., 'John 10:30'")
+    verse_content = serializers.CharField(required=False, allow_blank=True, allow_null=True, help_text="The content of the Bible verse")
 
 
 class ReflectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reflection
-        fields = ['id', 'name', 'likes', 'comments', 'content', 'date']
+        fields = ['id', 'name', 'likes', 'comments', 'content', 'devotion', 'date']
         read_only_fields = ['id', 'date']
 
 class ResourceSerializer(serializers.ModelSerializer):
@@ -36,7 +37,7 @@ class SermonSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'date', 'resources', 'next_sermon', 'previous_sermon']
         
-
+    @extend_schema_field(serializers.URLField(allow_null=True))
     def get_next_sermon(self, obj):
         series = self.context.get('series')
         if not series:
@@ -54,6 +55,7 @@ class SermonSerializer(serializers.ModelSerializer):
             pass
         return None
 
+    @extend_schema_field(serializers.URLField(allow_null=True))
     def get_previous_sermon(self, obj):
         series = self.context.get('series')
         if not series:
@@ -110,20 +112,64 @@ class EventSerializer(serializers.ModelSerializer):
             return base_date + timedelta(days=obj.days - 1)
         return None  # type: ignore
     
-# class DevotionSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Devotion
-#         fields = ['id', 'title', 'Bible_verse', 'content', 'thumbnail', 'date']
-#         read_only_fields = ['id', 'date']
 
 
 class DevotionSerializer(serializers.ModelSerializer):
-    Bible_verse = BibleVerseSerializer()
+    Bible_verse = serializers.JSONField(required=False, allow_null=True)
     reflections = ReflectionSerializer(many=True, read_only=True)
+    thumbnail = serializers.ImageField(required=False, allow_null=True)
+
     class Meta:
         model = Devotion
         fields = ['id', 'title', 'Bible_verse', 'content', 'thumbnail', 'date', 'reflections']
         read_only_fields = ['id']
+
+    def create(self, validated_data):
+        bible = validated_data.pop('Bible_verse', {})
+        bible = self.validate_Bible_verse(bible)
+        return Devotion.objects.create(Bible_verse=bible, **validated_data)
+
+    def update(self, instance, validated_data):
+        bible = validated_data.pop('Bible_verse', None)
+        if bible is not None:
+            instance.Bible_verse = self.validate_Bible_verse(bible)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+    def validate_Bible_verse(self, value):
+        # Accept either a dict or a JSON string for Bible_verse
+        if isinstance(value, str):
+            import json
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError as e:
+                raise serializers.ValidationError(f"Invalid JSON for Bible_verse: {e}")
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("Bible_verse must be an object with 'reference' and 'verse_content'.")
+        # Ensure required keys
+        value.setdefault('reference', '')
+        value.setdefault('verse_content', '')
+        return value
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        import json
+        bv = instance.Bible_verse
+        if isinstance(bv, str):
+            try:
+                bv = json.loads(bv)
+            except Exception:
+                bv = {}
+        if not isinstance(bv, dict):
+            bv = {}
+        data['Bible_verse'] = {
+            'reference': bv.get('reference', ''),
+            'verse_content': bv.get('verse_content', ''),
+        }
+        return data
+
 
 class PrayerRequestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -142,6 +188,27 @@ class LiveStreamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Live_stream
         fields = ['id', 'title', 'description', 'stream_link', 'status', 'reactions', 'comments', 'date']
-        read_only_fields = ['id', 'date']
+        read_only_fields = ['id']
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    is_superuser = serializers.BooleanField(required=False, default=False)
+
+    class Meta:
+        model = get_user_model()
+        fields = ['id', 'username', 'email', 'password', 'is_staff', 'is_superuser', 'date_joined']
+        read_only_fields = ['id', 'is_staff', 'date_joined']
+
+    def create(self, validated_data):
+        is_superuser = validated_data.pop('is_superuser', False)
+        password = validated_data.pop('password')
+        User = get_user_model()
+        user = User(**validated_data)
+        user.is_staff = True
+        user.is_superuser = bool(is_superuser)
+        user.set_password(password)
+        user.save()
+        return user
 
 
