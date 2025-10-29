@@ -26,17 +26,11 @@ except ImportError:
     pass
 
 
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-please-change-me')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6in-n6qyo#wj@l^-g1k1i1r-(m*1)_l*zbon0i&tz2%_i5zn4d'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ["*",".vercel.app"]
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -71,11 +65,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-# CORS_ALLOWED_ORIGINS = [
-#     "https://church-web.vercel.app",
-#     "*",
-# ]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -218,8 +207,17 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
+    'TAGS': [
+        {'name': 'Sermons'},
+        {'name': 'Series'},
+        {'name': 'Resources'},
+        {'name': 'Events'},
+        {'name': 'Devotions'},
+        {'name': 'Reflections'},
+        {'name': 'Prayer Requests'},
+        {'name': 'Announcements'},
+        {'name': 'Live Streams'},
+        {'name': 'Auth'},
+        {'name': 'Staff'},
+    ],
 }
-
-
-
-
