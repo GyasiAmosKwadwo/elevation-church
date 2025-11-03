@@ -203,6 +203,16 @@ class UpdateReflection(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
     lookup_url_kwarg = 'reflection_id'
 
+@extend_schema(tags=['Reflections'])
+class get_reflections_for_devotion(generics.ListAPIView):
+    serializer_class = ReflectionSerializer
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 10
+
+    def get_queryset(self):
+        devotion_id = self.kwargs['devotion_id']
+        return Reflection.objects.filter(devotion__id=devotion_id).order_by('-date')
+
 @extend_schema(tags=['Prayer Requests'])
 class ListPrayerRequest(generics.ListAPIView):
     queryset = Prayer_request.objects.order_by('-date')
