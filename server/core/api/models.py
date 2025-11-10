@@ -1,5 +1,6 @@
 from django.db import models
 import uuid
+from datetime import datetime
 
 class Sermon(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -13,7 +14,7 @@ class Sermon(models.Model):
     likes = models.IntegerField(default=0, help_text="Number of likes for this reflection")
     comments = models.TextField(blank=True, help_text="Comments on the reflection")
     date = models.DateTimeField(auto_now_add=True)
-
+    
     def __str__(self):
         return self.title
 
@@ -66,7 +67,7 @@ class Devotion(models.Model):
     content = models.TextField(help_text="Enter the content of the devotional")
     thumbnail = models.ImageField(upload_to='devotion_thumbnails/', null = True, help_text="Upload a thumbnail for the devotional")
     #reflection = models.ManyToManyField('Reflection', related_name='devotion_reflections', blank=True, help_text="Add reflections for this devotional")
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(default=datetime.now, help_text="Date the devotional was created")
     
 
     def __str__(self):

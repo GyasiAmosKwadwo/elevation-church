@@ -72,7 +72,7 @@ class SermonSerializer(serializers.ModelSerializer):
         except ValueError:
             pass
         return None
-
+    
 class SeriesSerializer(serializers.ModelSerializer):
     available_sermons = serializers.SerializerMethodField()
     class Meta:
