@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 
 
 
-@extend_schema(tags=['Sermons'])
+@extend_schema(tags=['Sermons'], description="Retrieve a list of sermons ordered by date.")
 class ListSermon(generics.ListAPIView):
     queryset = Sermon.objects.order_by('-date')
     serializer_class = SermonSerializer
@@ -21,20 +21,20 @@ class ListSermon(generics.ListAPIView):
     PageNumberPagination.page_size = 10
     
 
-@extend_schema(tags=['Sermons'])
+@extend_schema(tags=['Sermons'], description="Retrieve details of a specific sermon by its ID.")
 class DetailSermon(generics.RetrieveAPIView):
     queryset = Sermon.objects.all()
     serializer_class = SermonSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'sermon_id'
 
-@extend_schema(tags=['Sermons'])
+@extend_schema(tags=['Sermons'], description="Create a new sermon entry. Admin access required.")
 class CreateSermon(generics.CreateAPIView):
     queryset = Sermon.objects.all()
     serializer_class = SermonSerializer
     permission_classes = [IsAdminUser]
 
-@extend_schema(tags=['Sermons'])
+@extend_schema(tags=['Sermons'], description="Update or delete an existing sermon by its ID. Admin access required.")
 class UpdateSermon(generics.RetrieveUpdateDestroyAPIView):
     queryset = Sermon.objects.all()
     serializer_class = SermonSerializer
@@ -42,9 +42,10 @@ class UpdateSermon(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
     lookup_url_kwarg = 'sermon_id'
 
+
     #Resources
 
-@extend_schema(tags=['Resources'])
+@extend_schema(tags=['Resources'], description="Retrieve a list of resources ordered by name.")
 class ListResource(generics.ListAPIView):
     queryset = Resource.objects.order_by('-name')
     serializer_class = ResourceSerializer
@@ -54,20 +55,20 @@ class ListResource(generics.ListAPIView):
     PageNumberPagination.page_size = 10
 
 
-@extend_schema(tags=['Resources'])
+@extend_schema(tags=['Resources'], description="Retrieve details of a specific resource by its ID.")
 class DetailResource(generics.RetrieveAPIView):
     queryset = Resource.objects.all()
     serializer_class = ResourceSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'resource_id'
 
-@extend_schema(tags=['Resources'])
+@extend_schema(tags=['Resources'], description="Create a new resource entry. Admin access required.")
 class CreateResource(generics.CreateAPIView):
     queryset = Resource.objects.all()
     serializer_class = ResourceSerializer
     permission_classes = [IsAdminUser]
 
-@extend_schema(tags=['Resources'])
+@extend_schema(tags=['Resources'], description="Update or delete an existing resource by its ID. Admin access required.")
 class UpdateResource(generics.RetrieveUpdateDestroyAPIView):
     queryset = Resource.objects.all()
     serializer_class = ResourceSerializer
@@ -77,7 +78,7 @@ class UpdateResource(generics.RetrieveUpdateDestroyAPIView):
 
     #series
 
-@extend_schema(tags=['Series'])
+@extend_schema(tags=['Series'], description="Retrieve a list of series ordered by date.")
 class ListSeries(generics.ListAPIView):
     queryset = Series.objects.order_by('-date')
     serializer_class = SeriesSerializer
@@ -86,20 +87,20 @@ class ListSeries(generics.ListAPIView):
     pagination_class = PageNumberPagination
     
 
-@extend_schema(tags=['Series'])
+@extend_schema(tags=['Series'], description="Retrieve details of a specific series by its ID.")
 class DetailSeries(generics.RetrieveAPIView):
     queryset = Series.objects.all()
     serializer_class = SeriesSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'series_id'
 
-@extend_schema(tags=['Series'])
+@extend_schema(tags=['Series'], description="Create a new series entry. Admin access required.")
 class CreateSeries(generics.CreateAPIView):
     queryset = Series.objects.all()
     serializer_class = SeriesSerializer
     permission_classes = [IsAdminUser]
 
-@extend_schema(tags=['Series'])
+@extend_schema(tags=['Series'], description="Update or delete an existing series by its ID. Admin access required.")
 class UpdateSeries(generics.RetrieveUpdateDestroyAPIView):
     queryset = Series.objects.all()
     serializer_class = SeriesSerializer
@@ -109,7 +110,7 @@ class UpdateSeries(generics.RetrieveUpdateDestroyAPIView):
 
     #Events
 
-@extend_schema(tags=['Events'])
+@extend_schema(tags=['Events'], description="Retrieve a list of events ordered by date.")
 class ListEvent(generics.ListAPIView):
     queryset = Event.objects.order_by('date')
     serializer_class = EventSerializer
