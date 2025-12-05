@@ -93,10 +93,14 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DB_URL = os.environ.get('DB_URL')
 
 DATABASES = {
-    'default': dj_database_url.parse(DB_URL) if DB_URL else {
+    'default': dj_database_url.config(
+        default=DB_URL,
+        conn_max_age=600, # Optional: keeps connections alive for a bit
+        ssl_require=True  # This is the crucial part for Render
+    ) if DB_URL else {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    },
 
 }
 
