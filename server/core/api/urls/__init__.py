@@ -12,6 +12,7 @@ urlpatterns = [
     path('announcements/', include(announcements.urlpatterns)),
     path('live-streams/', include(live_streams.urlpatterns)),
     path('staff/', include(admins.urlpatterns)),
+    path('gallery/', include('api.urls.gallery')),
 
 
 ]

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
-from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement, Live_stream
+from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement, Live_stream, GalleryImage
 from datetime import date
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -208,5 +208,11 @@ class StaffUserSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+class GalleryImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GalleryImage
+        fields = ['id', 'title', 'image', 'description', 'venue', 'date']
+        read_only_fields = ['id']
 
 

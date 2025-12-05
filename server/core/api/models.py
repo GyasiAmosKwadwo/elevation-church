@@ -132,3 +132,14 @@ class Live_stream(models.Model):
         return self.title
     
 
+class GalleryImage(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=200, help_text="Enter the title of the gallery image")
+    image = models.ImageField(upload_to='gallery_images/', help_text="Upload the gallery image")
+    description = models.CharField(max_length=700, help_text="Enter a brief description of the gallery image")
+    venue = models.CharField(max_length=300, help_text="Enter the venue where the image was taken", blank=True)
+    likes = models.IntegerField(default=0, help_text="Number of likes for this gallery image")
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
