@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement
+from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement, GalleryImage, Live_stream
 
 @admin.register(Sermon)
 class SermonAdmin(admin.ModelAdmin):
@@ -48,4 +48,16 @@ class PrayerRequestAdmin(admin.ModelAdmin):
 class AnnouncementAdmin(admin.ModelAdmin):
     list_display = ('title', 'date')
     search_fields = ('title', 'content')
+    list_filter = ('date',)
+
+@admin.register(Live_stream)
+class LiveStreamAdmin(admin.ModelAdmin):
+    list_display = ('title', 'status', 'date')
+    search_fields = ('title', 'description')
+    list_filter = ('status', 'date')
+
+@admin.register(GalleryImage)
+class GalleryImageAdmin(admin.ModelAdmin):
+    list_display = ('title', 'date')
+    search_fields = ('title', 'description')
     list_filter = ('date',)

@@ -1,13 +1,34 @@
 from rest_framework import generics
-from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement, Live_stream
-from .serializers import SermonSerializer, ResourceSerializer, SeriesSerializer,EventSerializer, DevotionSerializer, ReflectionSerializer, PrayerRequestSerializer, AnnouncementSerializer, LiveStreamSerializer, StaffUserSerializer
+from .models import (
+    Sermon, 
+    Resource, 
+    Series, 
+    Event, 
+    Devotion, 
+    Reflection, 
+    Prayer_request, 
+    Announcement, 
+    Live_stream, 
+    GalleryImage
+    )
+from .serializers import ( 
+    SermonSerializer, 
+    ResourceSerializer, 
+    SeriesSerializer,
+    EventSerializer, 
+    DevotionSerializer, 
+    ReflectionSerializer, 
+    PrayerRequestSerializer, 
+    AnnouncementSerializer,
+    LiveStreamSerializer,
+    StaffUserSerializer, 
+    GalleryImageSerializer
+    )
 from rest_framework.permissions import IsAdminUser, AllowAny, BasePermission 
 from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
-
-
-
+from rest_framework import parsers
 
 
 @extend_schema(tags=['Sermons'], description="Retrieve a list of sermons ordered by date.")
@@ -342,4 +363,37 @@ class DeleteStaffUser(generics.DestroyAPIView):
             from rest_framework.exceptions import ValidationError
             raise ValidationError('You cannot delete your own account.')
         instance.delete()
+
+@extend_schema(tags=['Gallery Images'])
+class ListGalleryImage(generics.ListAPIView):
+    queryset = GalleryImage.objects.order_by('-date')
+    serializer_class = GalleryImageSerializer
+    ordering = ['-date']
+    search_fields = ['title', 'description']
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 10
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser]
+
+@extend_schema(tags=['Gallery Images'])
+class DetailGalleryImage(generics.RetrieveAPIView):
+    queryset = GalleryImage.objects.all()
+    serializer_class = GalleryImageSerializer
+    lookup_field = 'id'
+    lookup_url_kwarg = 'gallery_image_id'
+
+@extend_schema(tags=['Gallery Images'])
+class CreateGalleryImage(generics.CreateAPIView):
+    queryset = GalleryImage.objects.all()
+    serializer_class = GalleryImageSerializer
+    permission_classes = [IsAdminUser]
+
+@extend_schema(tags=['Gallery Images'], description="Update or delete an existing gallery image by its ID. Admin access required.")
+class UpdateGalleryImage(generics.RetrieveUpdateDestroyAPIView):
+    queryset = GalleryImage.objects.all()
+    serializer_class = GalleryImageSerializer
+    permission_classes = [IsAdminUser]
+    lookup_field = 'id'
+    lookup_url_kwarg = 'gallery_image_id'
+
+
 
