@@ -1,6 +1,23 @@
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
-from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement, Live_stream, GalleryImage
+from django.utils import timezone
+from decimal import Decimal
+from .models import (
+    Sermon,
+    Resource,
+    Series,
+    Event,
+    Devotion,
+    Reflection,
+    Prayer_request,
+    Announcement,
+    Live_stream,
+    Gallery,
+    GalleryImage,
+    ContributionChannel,
+    ContributionIntent,
+    Reel,
+)
 from datetime import date
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -224,7 +241,169 @@ class StaffUserSerializer(serializers.ModelSerializer):
         return user
 
 class GalleryImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.URLField(write_only=True, required=False)
+
     class Meta:
         model = GalleryImage
-        fields = ['id', 'title', 'image', 'description', 'venue', 'date']
+        fields = ['id', 'gallery', 'title', 'image', 'image_url', 'description', 'venue', 'likes', 'date']
         read_only_fields = ['id', 'date']
+
+    def create(self, validated_data):
+        image_url = validated_data.pop('image_url', None)
+        instance = super().create(validated_data)
+        if image_url:
+            instance.image = image_url
+            instance.save(update_fields=['image'])
+        return instance
+
+    def update(self, instance, validated_data):
+        image_url = validated_data.pop('image_url', None)
+        instance = super().update(instance, validated_data)
+        if image_url:
+            instance.image = image_url
+            instance.save(update_fields=['image'])
+        return instance
+
+
+class GallerySerializer(serializers.ModelSerializer):
+    images = GalleryImageSerializer(many=True, read_only=True)
+    image_urls = serializers.ListField(
+        child=serializers.URLField(),
+        write_only=True,
+        required=False,
+        allow_empty=True
+    )
+
+    class Meta:
+        model = Gallery
+        fields = ['id', 'title', 'description', 'venue', 'likes', 'date', 'images', 'image_urls']
+        read_only_fields = ['id', 'date', 'images']
+
+    def create(self, validated_data):
+        image_urls = validated_data.pop('image_urls', [])
+        gallery = super().create(validated_data)
+        for index, url in enumerate(image_urls, start=1):
+            GalleryImage.objects.create(
+                gallery=gallery,
+                title=f"{gallery.title} - Image {index}",
+                image=url,
+                description=gallery.description,
+                venue=gallery.venue,
+            )
+        return gallery
+
+    def update(self, instance, validated_data):
+        image_urls = validated_data.pop('image_urls', None)
+        gallery = super().update(instance, validated_data)
+
+        if image_urls is not None:
+            existing = gallery.images.count()
+            for offset, url in enumerate(image_urls, start=1):
+                GalleryImage.objects.create(
+                    gallery=gallery,
+                    title=f"{gallery.title} - Image {existing + offset}",
+                    image=url,
+                    description=gallery.description,
+                    venue=gallery.venue,
+                )
+
+        return gallery
+
+
+class ContributionChannelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContributionChannel
+        fields = [
+            'id', 'name', 'channel_type', 'account_name', 'account_number',
+            'bank_name', 'branch', 'network', 'currency', 'instructions',
+            'is_active', 'display_order', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class ContributionIntentSerializer(serializers.ModelSerializer):
+    channel_details = ContributionChannelSerializer(source='channel', read_only=True)
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.01'))
+    confirmed_by = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ContributionIntent
+        fields = [
+            'id', 'channel', 'channel_details', 'amount', 'purpose', 'donor_name',
+            'donor_phone', 'reference', 'proof_url', 'status', 'admin_note',
+            'confirmed_by', 'confirmed_at', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'channel_details', 'confirmed_by', 'confirmed_at', 'created_at', 'updated_at']
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_confirmed_by(self, obj):
+        if not obj.confirmed_by:
+            return None
+        return obj.confirmed_by.username
+
+    def create(self, validated_data):
+        validated_data['status'] = 'pending'
+        validated_data['confirmed_by'] = None
+        validated_data['confirmed_at'] = None
+        validated_data['admin_note'] = ''
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        old_status = instance.status
+        instance = super().update(instance, validated_data)
+        request = self.context.get('request')
+        new_status = instance.status
+
+        if new_status == 'confirmed':
+            if old_status != 'confirmed' or not instance.confirmed_at:
+                instance.confirmed_at = timezone.now()
+                if request and request.user and request.user.is_authenticated:
+                    instance.confirmed_by = request.user
+                instance.save(update_fields=['confirmed_at', 'confirmed_by'])
+        elif old_status == 'confirmed' and new_status != 'confirmed':
+            instance.confirmed_at = None
+            instance.confirmed_by = None
+            instance.save(update_fields=['confirmed_at', 'confirmed_by'])
+
+        return instance
+
+
+class ReelSerializer(serializers.ModelSerializer):
+    created_by = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Reel
+        fields = [
+            'id', 'title', 'caption', 'video_url', 'thumbnail_url', 'category',
+            'is_published', 'published_at', 'views_count', 'likes_count',
+            'created_by', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'published_at', 'views_count', 'likes_count', 'created_by', 'created_at', 'updated_at']
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_created_by(self, obj):
+        if not obj.created_by:
+            return None
+        return obj.created_by.username
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and request.user and request.user.is_authenticated:
+            validated_data['created_by'] = request.user
+        if validated_data.get('is_published', True):
+            validated_data.setdefault('published_at', timezone.now())
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        old_published = instance.is_published
+        instance = super().update(instance, validated_data)
+        new_published = instance.is_published
+
+        if new_published and (not old_published) and not instance.published_at:
+            instance.published_at = timezone.now()
+            instance.save(update_fields=['published_at'])
+        elif not new_published:
+            instance.published_at = None
+            instance.save(update_fields=['published_at'])
+
+        return instance

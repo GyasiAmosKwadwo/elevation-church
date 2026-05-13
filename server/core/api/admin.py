@@ -1,5 +1,20 @@
 from django.contrib import admin
-from .models import Sermon, Resource, Series, Event, Devotion, Reflection, Prayer_request, Announcement, GalleryImage, Live_stream
+from .models import (
+    Sermon,
+    Resource,
+    Series,
+    Event,
+    Devotion,
+    Reflection,
+    Prayer_request,
+    Announcement,
+    Gallery,
+    GalleryImage,
+    Live_stream,
+    ContributionChannel,
+    ContributionIntent,
+    Reel,
+)
 
 @admin.register(Sermon)
 class SermonAdmin(admin.ModelAdmin):
@@ -58,6 +73,38 @@ class LiveStreamAdmin(admin.ModelAdmin):
 
 @admin.register(GalleryImage)
 class GalleryImageAdmin(admin.ModelAdmin):
-    list_display = ('title', 'date')
-    search_fields = ('title', 'description')
+    list_display = ('title', 'gallery', 'date')
+    search_fields = ('title', 'description', 'gallery__title')
+    list_filter = ('date', 'gallery')
+
+
+@admin.register(Gallery)
+class GalleryAdmin(admin.ModelAdmin):
+    list_display = ('title', 'venue', 'likes', 'date')
+    search_fields = ('title', 'description', 'venue')
     list_filter = ('date',)
+
+
+@admin.register(ContributionChannel)
+class ContributionChannelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'channel_type', 'account_name', 'account_number', 'is_active', 'display_order')
+    search_fields = ('name', 'account_name', 'account_number', 'bank_name', 'network')
+    list_filter = ('channel_type', 'is_active', 'currency')
+    ordering = ('display_order', 'name')
+
+
+@admin.register(ContributionIntent)
+class ContributionIntentAdmin(admin.ModelAdmin):
+    list_display = ('channel', 'amount', 'purpose', 'status', 'donor_name', 'created_at', 'confirmed_by')
+    search_fields = ('donor_name', 'donor_phone', 'reference', 'channel__name')
+    list_filter = ('status', 'purpose', 'channel__channel_type', 'created_at')
+    autocomplete_fields = ('channel', 'confirmed_by')
+    ordering = ('-created_at',)
+
+
+@admin.register(Reel)
+class ReelAdmin(admin.ModelAdmin):
+    list_display = ('title', 'category', 'is_published', 'published_at', 'created_by', 'created_at')
+    search_fields = ('title', 'caption', 'category')
+    list_filter = ('is_published', 'category', 'created_at')
+    ordering = ('-published_at', '-created_at')
