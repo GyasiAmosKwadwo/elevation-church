@@ -1,15 +1,13 @@
 # Environment and secrets
 .env
 .env.*
-server/.env
-./server/.env
+env
 
 # Virtual environments
 env/
 venv/
 .venv/
-server/env/
-server/core/venv/
+core/venv/
 
 # Python cache/artifacts
 __pycache__/
