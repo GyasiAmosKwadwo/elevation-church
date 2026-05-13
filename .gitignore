@@ -2,6 +2,7 @@
 .env
 .env.*
 server/.env
+.server/.env
 
 # Virtual environments
 env/
