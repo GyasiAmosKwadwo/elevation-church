@@ -24,8 +24,7 @@ class ResourceSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 class SermonSerializer(serializers.ModelSerializer):
-    resources = ResourceSerializer(many=True, read_only=True)
-    reflection = ReflectionSerializer(many=True, read_only=True)
+    resource_details = ResourceSerializer(source='resource', read_only=True)
     next_sermon = serializers.SerializerMethodField()
     previous_sermon = serializers.SerializerMethodField()
 
@@ -33,9 +32,10 @@ class SermonSerializer(serializers.ModelSerializer):
         model = Sermon
         fields = [
             'id', 'title', 'description', 'preacher', 'video_link',
-            'podcast_link', 'series', 'date', 'resources', 'likes','next_sermon', 'previous_sermon', 'reflection'
+            'podcast_link', 'series', 'resource', 'resource_details', 'date',
+            'likes', 'comments', 'next_sermon', 'previous_sermon'
         ]
-        read_only_fields = ['id', 'date', 'resources', 'next_sermon', 'previous_sermon']
+        read_only_fields = ['id', 'date', 'resource_details', 'next_sermon', 'previous_sermon']
         
     @extend_schema_field(serializers.URLField(allow_null=True))
     def get_next_sermon(self, obj):
@@ -75,10 +75,28 @@ class SermonSerializer(serializers.ModelSerializer):
     
 class SeriesSerializer(serializers.ModelSerializer):
     available_sermons = serializers.SerializerMethodField()
+    image_url = serializers.URLField(write_only=True, required=False)
+
     class Meta:
         model = Series
-        fields = ['id', 'title', 'description', 'image', 'thoughts','available_sermons']
+        fields = ['id', 'title', 'description', 'image', 'image_url', 'thoughts', 'available_sermons']
         read_only_fields = ['id']
+
+    def create(self, validated_data):
+        image_url = validated_data.pop('image_url', None)
+        instance = super().create(validated_data)
+        if image_url:
+            instance.image = image_url
+            instance.save(update_fields=['image'])
+        return instance
+
+    def update(self, instance, validated_data):
+        image_url = validated_data.pop('image_url', None)
+        instance = super().update(instance, validated_data)
+        if image_url:
+            instance.image = image_url
+            instance.save(update_fields=['image'])
+        return instance
 
     def get_available_sermons(self, obj):
         sermons = obj.sermon_series.order_by('date')
@@ -86,7 +104,7 @@ class SeriesSerializer(serializers.ModelSerializer):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    days = serializers.SerializerMethodField()
+    days = serializers.IntegerField(required=False, min_value=1)
     end_date = serializers.SerializerMethodField()
 
     class Meta:
@@ -95,11 +113,7 @@ class EventSerializer(serializers.ModelSerializer):
             'id', 'name', 'description', 'flyer', 'location', 'date',
             'end_date', 'days', 'start_time', 'end_time', 'created_at'
         ]
-        read_only_fields = ['id', 'created_at', 'days', 'end_date']
-
-    @extend_schema_field(serializers.IntegerField())
-    def get_days(self, obj) -> int:
-        return obj.days
+        read_only_fields = ['id', 'created_at', 'end_date']
 
     @extend_schema_field(serializers.DateField())
     def get_end_date(self, obj) -> 'date':
@@ -122,7 +136,7 @@ class DevotionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Devotion
         fields = ['id', 'title', 'Bible_verse', 'content', 'thumbnail', 'date', 'reflections']
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'date', 'reflections']
 
     def create(self, validated_data):
         bible = validated_data.pop('Bible_verse', {})
@@ -213,6 +227,4 @@ class GalleryImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = GalleryImage
         fields = ['id', 'title', 'image', 'description', 'venue', 'date']
-        read_only_fields = ['id']
-
-
+        read_only_fields = ['id', 'date']

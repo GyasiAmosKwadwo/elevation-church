@@ -15,6 +15,7 @@ import os
 from datetime import timedelta
 import importlib.util
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -97,22 +98,19 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/
 
-DB_URL = os.environ.get("DATABASE_URL")
-if DB_URL:
-    DATABASES = {
-        "default": dj_database_url.config(
-            default=DB_URL,
-            conn_max_age=600,
-            ssl_require=True
-        )
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+DB_URL = os.environ.get("DATABASE_URL") or os.environ.get("DB_URL")
+if not DB_URL:
+    raise ImproperlyConfigured(
+        "DATABASE_URL (or DB_URL) must be set in environment. SQLite fallback is disabled."
+    )
+
+DATABASES = {
+    "default": dj_database_url.config(
+        default=DB_URL,
+        conn_max_age=600,
+        ssl_require=True
+    )
+}
 
 
 # Password validation
