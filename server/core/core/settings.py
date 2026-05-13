@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from datetime import timedelta
+import importlib.util
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,7 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    # Project .env lives at server/.env
+    load_dotenv(BASE_DIR.parent / ".env")
 except ImportError:
     pass
 
@@ -50,10 +52,14 @@ INSTALLED_APPS = [
     "corsheaders",
     'rest_framework_simplejwt',
     'djoser',  
-    'cloudinary_storage',
-    'cloudinary',
-    
 ]
+
+# Cloudinary is optional for local environments where the package is not installed.
+if importlib.util.find_spec("cloudinary_storage") and importlib.util.find_spec("cloudinary"):
+    INSTALLED_APPS += [
+        'cloudinary_storage',
+        'cloudinary',
+    ]
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -91,15 +97,22 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/
 
-DB_URL = os.environ.get("DATABASE_URL")  # FIXED NAME
-
-DATABASES = {
-    "default": dj_database_url.config(
-        default=DB_URL,
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
+DB_URL = os.environ.get("DATABASE_URL")
+if DB_URL:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=DB_URL,
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
@@ -147,12 +160,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
-}
+if importlib.util.find_spec("cloudinary_storage"):
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+        'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+    }
 
 
 REST_FRAMEWORK = {
