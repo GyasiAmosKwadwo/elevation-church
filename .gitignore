@@ -1,2 +1,44 @@
+# Environment and secrets
 .env
-env
+.env.*
+server/.env
+
+# Virtual environments
+env/
+venv/
+.venv/
+server/env/
+server/core/venv/
+
+# Python cache/artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Django/local runtime artifacts
+db.sqlite3
+*/db.sqlite3
+*.log
+media/
+staticfiles/
+
+# Node artifacts
+node_modules/
+dist/
+build/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS/editor noise
+.DS_Store
+.idea/
+.vscode/

@@ -172,3 +172,18 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Contact
 
 For questions or support, please contact the development team.
+
+
+
+
+
+
+
+
+Now I want you to learn the system very well. This is a church manage,ment system. Suggest additional  functionalities or improvements to be made on this system to make it into a fully fledged applicantion
+
+In addition, we want to allow unauthenticated users to contribute to the church through MOMO and BANK. For now, no payment gateway is to be implemented. We just have to allow the admin to state the receiving account info so users can pick those info from their interface and just send the money through their phone or bank. 
+
+I also want to allow admin or staff to add something like reels.
+
+How best can we acheive this? And how will you grade this system architecture?
