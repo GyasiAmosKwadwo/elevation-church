@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 import uuid
 from datetime import datetime
 
@@ -132,14 +133,129 @@ class Live_stream(models.Model):
         return self.title
     
 
+class Gallery(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=200, help_text="Enter the title of the gallery")
+    description = models.CharField(max_length=700, help_text="Enter a brief description of the gallery")
+    venue = models.CharField(max_length=300, help_text="Enter the venue where the images were taken", blank=True)
+    likes = models.IntegerField(default=0, help_text="Number of likes for this gallery")
+    date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date']
+        verbose_name_plural = "Galleries"
+
+    def __str__(self):
+        return self.title
+
+
 class GalleryImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    gallery = models.ForeignKey('Gallery', null=True, blank=True, on_delete=models.CASCADE, related_name='images', help_text="Select the gallery this image belongs to")
     title = models.CharField(max_length=200, help_text="Enter the title of the gallery image")
     image = models.ImageField(upload_to='gallery_images/', max_length=500, help_text="Upload the gallery image")
     description = models.CharField(max_length=700, help_text="Enter a brief description of the gallery image")
     venue = models.CharField(max_length=300, help_text="Enter the venue where the image was taken", blank=True)
     likes = models.IntegerField(default=0, help_text="Number of likes for this gallery image")
     date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class ContributionChannel(models.Model):
+    CHANNEL_CHOICES = [
+        ('momo', 'MOMO'),
+        ('bank', 'BANK'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=120, help_text="Display name for the receiving account")
+    channel_type = models.CharField(max_length=10, choices=CHANNEL_CHOICES, help_text="Contribution channel type")
+    account_name = models.CharField(max_length=200, help_text="Account holder name")
+    account_number = models.CharField(max_length=120, help_text="MOMO number or bank account number")
+    bank_name = models.CharField(max_length=150, blank=True, help_text="Bank name (for bank channels)")
+    branch = models.CharField(max_length=150, blank=True, help_text="Bank branch (optional)")
+    network = models.CharField(max_length=100, blank=True, help_text="MOMO network (for MOMO channels)")
+    currency = models.CharField(max_length=10, default='GHS', help_text="Currency code, e.g. GHS")
+    instructions = models.TextField(blank=True, help_text="Optional guidance shown to contributors")
+    is_active = models.BooleanField(default=True, help_text="Whether this receiving account is currently active")
+    display_order = models.PositiveIntegerField(default=0, help_text="Sort order for displaying channels")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['display_order', 'name']
+
+    def __str__(self):
+        return f"{self.name} ({self.channel_type.upper()})"
+
+
+class ContributionIntent(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('rejected', 'Rejected'),
+    ]
+    PURPOSE_CHOICES = [
+        ('tithe', 'Tithe'),
+        ('offering', 'Offering'),
+        ('project', 'Project'),
+        ('donation', 'Donation'),
+        ('other', 'Other'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    channel = models.ForeignKey(ContributionChannel, on_delete=models.PROTECT, related_name='intents')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="Amount contributor sent")
+    purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES, default='donation')
+    donor_name = models.CharField(max_length=200, blank=True, help_text="Contributor name (optional)")
+    donor_phone = models.CharField(max_length=30, blank=True, help_text="Contributor phone (optional)")
+    reference = models.CharField(max_length=120, blank=True, help_text="Bank/MOMO transfer reference")
+    proof_url = models.URLField(blank=True, help_text="Optional proof screenshot URL")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    admin_note = models.TextField(blank=True, help_text="Internal note by admin/staff")
+    confirmed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='confirmed_contribution_intents'
+    )
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.channel.name} - {self.amount} ({self.status})"
+
+
+class Reel(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=200)
+    caption = models.TextField(blank=True)
+    video_url = models.URLField(help_text="Publicly accessible reel video URL")
+    thumbnail_url = models.URLField(blank=True, help_text="Optional reel thumbnail image URL")
+    category = models.CharField(max_length=100, blank=True)
+    is_published = models.BooleanField(default=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+    views_count = models.PositiveIntegerField(default=0)
+    likes_count = models.PositiveIntegerField(default=0)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='created_reels'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-published_at', '-created_at']
 
     def __str__(self):
         return self.title
