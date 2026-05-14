@@ -14,6 +14,11 @@ from .models import (
     ContributionChannel,
     ContributionIntent,
     Reel,
+    SiteSettings,
+    ThemeSettings,
+    NavigationItem,
+    PageConfig,
+    SectionConfig,
 )
 
 @admin.register(Sermon)
@@ -108,3 +113,39 @@ class ReelAdmin(admin.ModelAdmin):
     search_fields = ('title', 'caption', 'category')
     list_filter = ('is_published', 'category', 'created_at')
     ordering = ('-published_at', '-created_at')
+
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    list_display = ('church_name', 'email', 'phone', 'updated_at')
+    readonly_fields = ('updated_at',)
+
+
+@admin.register(ThemeSettings)
+class ThemeSettingsAdmin(admin.ModelAdmin):
+    list_display = ('primary_color', 'secondary_color', 'accent_color', 'updated_at')
+    readonly_fields = ('updated_at',)
+
+
+@admin.register(NavigationItem)
+class NavigationItemAdmin(admin.ModelAdmin):
+    list_display = ('label', 'location', 'item_type', 'parent', 'display_order', 'is_enabled')
+    list_filter = ('location', 'item_type', 'is_enabled', 'cta_style')
+    search_fields = ('label', 'url')
+    ordering = ('location', 'display_order', 'label')
+
+
+@admin.register(PageConfig)
+class PageConfigAdmin(admin.ModelAdmin):
+    list_display = ('slug', 'title', 'is_enabled', 'display_order', 'updated_at')
+    list_filter = ('is_enabled',)
+    search_fields = ('slug', 'title', 'subtitle')
+    ordering = ('display_order', 'slug')
+
+
+@admin.register(SectionConfig)
+class SectionConfigAdmin(admin.ModelAdmin):
+    list_display = ('key', 'page', 'title', 'is_enabled', 'display_order', 'updated_at')
+    list_filter = ('is_enabled', 'text_align', 'page')
+    search_fields = ('key', 'title', 'subtitle', 'page__slug')
+    ordering = ('page__slug', 'display_order', 'key')

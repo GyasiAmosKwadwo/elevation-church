@@ -13,6 +13,7 @@ from . import (
     contributions,
     reels,
     analytics,
+    site_config,
 )
 
 urlpatterns = [
@@ -30,6 +31,7 @@ urlpatterns = [
     path('contributions/', include(contributions.urlpatterns)),
     path('reels/', include(reels.urlpatterns)),
     path('analytics/', include(analytics.urlpatterns)),
+    path('site-config/', include(site_config.urlpatterns)),
 
 
 ]

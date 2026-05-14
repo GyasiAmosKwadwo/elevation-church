@@ -17,6 +17,11 @@ from .models import (
     ContributionChannel,
     ContributionIntent,
     Reel,
+    SiteSettings,
+    ThemeSettings,
+    NavigationItem,
+    PageConfig,
+    SectionConfig,
 )
 from datetime import date
 from django.urls import reverse
@@ -407,3 +412,100 @@ class ReelSerializer(serializers.ModelSerializer):
             instance.save(update_fields=['published_at'])
 
         return instance
+
+
+class SiteSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SiteSettings
+        fields = [
+            'id', 'church_name', 'tagline', 'logo_url', 'banner_image_url',
+            'phone', 'email', 'address', 'service_times', 'social_links',
+            'footer_note', 'default_seo_title', 'default_seo_description',
+            'default_og_image_url', 'show_announcements', 'show_gallery',
+            'show_resources', 'show_prayer_request', 'show_live_badge',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'updated_at']
+
+
+class ThemeSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ThemeSettings
+        fields = [
+            'id', 'primary_color', 'secondary_color', 'accent_color',
+            'text_color', 'background_color', 'border_color',
+            'heading_font', 'body_font', 'button_style', 'card_radius',
+            'button_radius', 'shadow_strength', 'layout_density',
+            'section_spacing', 'dark_mode_enabled', 'updated_at',
+        ]
+        read_only_fields = ['id', 'updated_at']
+
+
+class NavigationItemSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = NavigationItem
+        fields = [
+            'id', 'label', 'url', 'item_type', 'parent', 'location',
+            'display_order', 'is_enabled', 'open_in_new_tab', 'cta_style',
+            'children', 'updated_at',
+        ]
+        read_only_fields = ['id', 'children', 'updated_at']
+
+    def get_children(self, obj):
+        queryset = obj.children.filter(is_enabled=True).order_by('display_order', 'label')
+        return [
+            {
+                'id': child.id,
+                'label': child.label,
+                'url': child.url,
+                'item_type': child.item_type,
+                'location': child.location,
+                'display_order': child.display_order,
+                'open_in_new_tab': child.open_in_new_tab,
+                'cta_style': child.cta_style,
+            }
+            for child in queryset
+        ]
+
+    def validate(self, attrs):
+        item_type = attrs.get('item_type', getattr(self.instance, 'item_type', 'link'))
+        url = attrs.get('url', getattr(self.instance, 'url', ''))
+        parent = attrs.get('parent', getattr(self.instance, 'parent', None))
+        location = attrs.get('location', getattr(self.instance, 'location', 'header'))
+
+        if item_type == 'link' and not url:
+            raise serializers.ValidationError({'url': 'URL is required for link items.'})
+        if parent:
+            if self.instance and parent.pk == self.instance.pk:
+                raise serializers.ValidationError({'parent': 'An item cannot be its own parent.'})
+            if parent.location != location:
+                raise serializers.ValidationError({'parent': 'Parent and child must share the same location.'})
+        return attrs
+
+
+class SectionConfigSerializer(serializers.ModelSerializer):
+    page_slug = serializers.CharField(source='page.slug', read_only=True)
+
+    class Meta:
+        model = SectionConfig
+        fields = [
+            'id', 'page', 'page_slug', 'key', 'title', 'subtitle', 'body',
+            'cta_label', 'cta_url', 'background_image_url', 'overlay_opacity',
+            'text_align', 'is_enabled', 'display_order', 'extra', 'updated_at',
+        ]
+        read_only_fields = ['id', 'page_slug', 'updated_at']
+
+
+class PageConfigSerializer(serializers.ModelSerializer):
+    sections = SectionConfigSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = PageConfig
+        fields = [
+            'slug', 'title', 'subtitle', 'body', 'hero_image_url',
+            'seo_title', 'seo_description', 'is_enabled', 'display_order',
+            'updated_at', 'sections',
+        ]
+        read_only_fields = ['updated_at', 'sections']
