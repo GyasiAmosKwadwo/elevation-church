@@ -16,6 +16,11 @@ from .models import (
     ContributionChannel,
     ContributionIntent,
     Reel,
+    SiteSettings,
+    ThemeSettings,
+    NavigationItem,
+    PageConfig,
+    SectionConfig,
     )
 from .serializers import ( 
     SermonSerializer, 
@@ -33,6 +38,11 @@ from .serializers import (
     ContributionChannelSerializer,
     ContributionIntentSerializer,
     ReelSerializer,
+    SiteSettingsSerializer,
+    ThemeSettingsSerializer,
+    NavigationItemSerializer,
+    PageConfigSerializer,
+    SectionConfigSerializer,
     )
 from rest_framework.permissions import IsAdminUser, AllowAny, BasePermission 
 from rest_framework.pagination import PageNumberPagination
@@ -342,6 +352,123 @@ class UpdateLiveStream(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminUser]
     lookup_field = 'id'
     lookup_url_kwarg = 'live_stream_id'
+
+
+class SingletonRetrieveUpdateMixin(generics.RetrieveUpdateAPIView):
+    singleton_model = None
+
+    def get_object(self):
+        if self.singleton_model is None:
+            raise AttributeError("singleton_model must be set")
+        obj, _ = self.singleton_model.objects.get_or_create(pk=1)
+        return obj
+
+
+@extend_schema(tags=['Site Config'], description="Get and update global site settings.")
+class RetrieveUpdateSiteSettings(SingletonRetrieveUpdateMixin):
+    serializer_class = SiteSettingsSerializer
+    permission_classes = [IsAdminUser]
+    singleton_model = SiteSettings
+
+
+@extend_schema(tags=['Site Config'], description="Get and update global theme settings.")
+class RetrieveUpdateThemeSettings(SingletonRetrieveUpdateMixin):
+    serializer_class = ThemeSettingsSerializer
+    permission_classes = [IsAdminUser]
+    singleton_model = ThemeSettings
+
+
+@extend_schema(tags=['Site Config'], description="List and create navigation items.")
+class ListCreateNavigationItem(generics.ListCreateAPIView):
+    queryset = NavigationItem.objects.select_related('parent').order_by('location', 'display_order', 'label')
+    serializer_class = NavigationItemSerializer
+    permission_classes = [IsAdminUser]
+    ordering = ['location', 'display_order', 'label']
+    search_fields = ['label', 'url', 'location', 'item_type']
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 50
+
+
+@extend_schema(tags=['Site Config'], description="Retrieve, update, or delete one navigation item.")
+class DetailUpdateNavigationItem(generics.RetrieveUpdateDestroyAPIView):
+    queryset = NavigationItem.objects.select_related('parent').all()
+    serializer_class = NavigationItemSerializer
+    permission_classes = [IsAdminUser]
+    lookup_field = 'id'
+    lookup_url_kwarg = 'item_id'
+
+
+@extend_schema(tags=['Site Config'], description="List and create page configs.")
+class ListCreatePageConfig(generics.ListCreateAPIView):
+    queryset = PageConfig.objects.order_by('display_order', 'slug')
+    serializer_class = PageConfigSerializer
+    permission_classes = [IsAdminUser]
+    ordering = ['display_order', 'slug']
+    search_fields = ['slug', 'title', 'subtitle']
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 50
+
+
+@extend_schema(tags=['Site Config'], description="Retrieve, update, or delete one page config.")
+class DetailUpdatePageConfig(generics.RetrieveUpdateDestroyAPIView):
+    queryset = PageConfig.objects.all()
+    serializer_class = PageConfigSerializer
+    permission_classes = [IsAdminUser]
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'slug'
+
+
+@extend_schema(tags=['Site Config'], description="List and create section configs.")
+class ListCreateSectionConfig(generics.ListCreateAPIView):
+    serializer_class = SectionConfigSerializer
+    permission_classes = [IsAdminUser]
+    ordering = ['page__slug', 'display_order', 'key']
+    search_fields = ['key', 'title', 'page__slug']
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 100
+
+    def get_queryset(self):
+        queryset = SectionConfig.objects.select_related('page').order_by('page__slug', 'display_order', 'key')
+        page_slug = self.request.query_params.get('page')
+        if page_slug:
+            queryset = queryset.filter(page__slug=page_slug)
+        return queryset
+
+
+@extend_schema(tags=['Site Config'], description="Retrieve, update, or delete one section config.")
+class DetailUpdateSectionConfig(generics.RetrieveUpdateDestroyAPIView):
+    queryset = SectionConfig.objects.select_related('page').all()
+    serializer_class = SectionConfigSerializer
+    permission_classes = [IsAdminUser]
+    lookup_field = 'id'
+    lookup_url_kwarg = 'section_id'
+
+
+@extend_schema(tags=['Site Config'], description="Public endpoint to load all site appearance/content configuration.")
+class PublicSiteConfiguration(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        site = SiteSettingsSerializer(SiteSettings.load()).data
+        theme = ThemeSettingsSerializer(ThemeSettings.load()).data
+
+        navigation_queryset = NavigationItem.objects.filter(
+            is_enabled=True,
+            parent__isnull=True
+        ).order_by('location', 'display_order', 'label')
+        navigation = NavigationItemSerializer(navigation_queryset, many=True).data
+
+        pages_queryset = PageConfig.objects.filter(is_enabled=True).prefetch_related('sections').order_by(
+            'display_order', 'slug'
+        )
+        pages = PageConfigSerializer(pages_queryset, many=True).data
+
+        return Response({
+            "site": site,
+            "theme": theme,
+            "navigation": navigation,
+            "pages": pages,
+        })
 
 
 # Contributions

@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 import uuid
 from datetime import datetime
 
@@ -259,3 +260,168 @@ class Reel(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class SiteSettings(models.Model):
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    church_name = models.CharField(max_length=120, default="Grace Cathedral")
+    tagline = models.CharField(max_length=280, default="A community of faith, hope, and love.")
+    logo_url = models.URLField(blank=True)
+    banner_image_url = models.URLField(blank=True)
+    phone = models.CharField(max_length=40, blank=True)
+    email = models.EmailField(blank=True)
+    address = models.CharField(max_length=300, blank=True)
+    service_times = models.JSONField(default=list, help_text="List of service time strings")
+    social_links = models.JSONField(default=dict, help_text="Map of social platform -> URL")
+    footer_note = models.CharField(max_length=220, blank=True, default="Made with care for our community.")
+    default_seo_title = models.CharField(max_length=180, blank=True)
+    default_seo_description = models.CharField(max_length=320, blank=True)
+    default_og_image_url = models.URLField(blank=True)
+    show_announcements = models.BooleanField(default=True)
+    show_gallery = models.BooleanField(default=True)
+    show_resources = models.BooleanField(default=True)
+    show_prayer_request = models.BooleanField(default=True)
+    show_live_badge = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        self.id = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return "Site Settings"
+
+
+class ThemeSettings(models.Model):
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    primary_color = models.CharField(max_length=20, default="#8B5A2B")
+    secondary_color = models.CharField(max_length=20, default="#F5F1EA")
+    accent_color = models.CharField(max_length=20, default="#3B82F6")
+    text_color = models.CharField(max_length=20, default="#1F2937")
+    background_color = models.CharField(max_length=20, default="#FFFFFF")
+    border_color = models.CharField(max_length=20, default="#E5E7EB")
+    heading_font = models.CharField(max_length=120, blank=True, default="Fraunces")
+    body_font = models.CharField(max_length=120, blank=True, default="Inter")
+    button_style = models.CharField(max_length=20, default="filled")
+    card_radius = models.PositiveSmallIntegerField(default=16)
+    button_radius = models.PositiveSmallIntegerField(default=12)
+    shadow_strength = models.CharField(max_length=20, default="medium")
+    layout_density = models.CharField(max_length=20, default="comfortable")
+    section_spacing = models.CharField(max_length=20, default="medium")
+    dark_mode_enabled = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        self.id = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return "Theme Settings"
+
+
+class NavigationItem(models.Model):
+    ITEM_TYPES = [
+        ('link', 'Link'),
+        ('dropdown', 'Dropdown'),
+    ]
+    LOCATIONS = [
+        ('header', 'Header'),
+        ('footer', 'Footer'),
+    ]
+    CTA_STYLES = [
+        ('none', 'None'),
+        ('primary', 'Primary'),
+        ('outline', 'Outline'),
+        ('ghost', 'Ghost'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    label = models.CharField(max_length=120)
+    url = models.CharField(max_length=300, blank=True)
+    item_type = models.CharField(max_length=20, choices=ITEM_TYPES, default='link')
+    parent = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='children',
+    )
+    location = models.CharField(max_length=20, choices=LOCATIONS, default='header')
+    display_order = models.PositiveIntegerField(default=0)
+    is_enabled = models.BooleanField(default=True)
+    open_in_new_tab = models.BooleanField(default=False)
+    cta_style = models.CharField(max_length=20, choices=CTA_STYLES, default='none')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['location', 'display_order', 'label']
+
+    def __str__(self):
+        return f"{self.label} ({self.location})"
+
+
+class PageConfig(models.Model):
+    slug = models.SlugField(max_length=100, unique=True)
+    title = models.CharField(max_length=180)
+    subtitle = models.CharField(max_length=260, blank=True)
+    body = models.TextField(blank=True)
+    hero_image_url = models.URLField(blank=True)
+    seo_title = models.CharField(max_length=180, blank=True)
+    seo_description = models.CharField(max_length=320, blank=True)
+    is_enabled = models.BooleanField(default=True)
+    display_order = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['display_order', 'slug']
+
+    def __str__(self):
+        return self.slug
+
+
+class SectionConfig(models.Model):
+    TEXT_ALIGN_CHOICES = [
+        ('left', 'Left'),
+        ('center', 'Center'),
+        ('right', 'Right'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    page = models.ForeignKey(PageConfig, on_delete=models.CASCADE, related_name='sections')
+    key = models.SlugField(max_length=120, help_text="Stable section identifier, e.g. home-hero")
+    title = models.CharField(max_length=180, blank=True)
+    subtitle = models.CharField(max_length=260, blank=True)
+    body = models.TextField(blank=True)
+    cta_label = models.CharField(max_length=120, blank=True)
+    cta_url = models.CharField(max_length=300, blank=True)
+    background_image_url = models.URLField(blank=True)
+    overlay_opacity = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=0.20,
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
+    )
+    text_align = models.CharField(max_length=20, choices=TEXT_ALIGN_CHOICES, default='left')
+    is_enabled = models.BooleanField(default=True)
+    display_order = models.PositiveIntegerField(default=0)
+    extra = models.JSONField(default=dict, blank=True, help_text="Optional additional options")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['page__slug', 'display_order', 'key']
+        constraints = [
+            models.UniqueConstraint(fields=['page', 'key'], name='unique_section_key_per_page')
+        ]
+
+    def __str__(self):
+        return f"{self.page.slug}:{self.key}"
