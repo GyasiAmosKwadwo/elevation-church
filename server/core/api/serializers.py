@@ -210,7 +210,7 @@ class DevotionSerializer(serializers.ModelSerializer):
 class PrayerRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prayer_request
-        fields = ['id', 'name', 'subject', 'date']
+        fields = ['id', 'name', 'phone_contact', 'subject', 'date']
         read_only_fields = ['id', 'date']
 
 

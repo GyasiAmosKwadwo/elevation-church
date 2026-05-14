@@ -99,6 +99,7 @@ class Reflection(models.Model):
 class Prayer_request(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, help_text="Enter your name here")
+    phone_contact = models.CharField(max_length=30, blank=True, help_text="Optional phone number for follow-up")
     subject = models.TextField(help_text="Enter the content of your prayer request")
     date = models.DateTimeField(auto_now_add=True)
 
