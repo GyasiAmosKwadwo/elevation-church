@@ -34,7 +34,7 @@ class Series(models.Model):
     title = models.CharField(max_length=200, help_text="Enter the title of the series")
     description = models.CharField(max_length=700, help_text="Enter a brief description of the series")
     available_sermons = models.ManyToManyField(Sermon, related_name='series_sermons', blank=True, help_text="Select sermons that belong to this series")
-    image = models.ImageField(upload_to='series_images/', max_length=500, default='https://www.freepik.com/free-photo/woman-praying-her-loved-ones_12690245.htm#fromView=search&page=1&position=49&uuid=b8c3c77b-8227-4daf-b533-f58011aa9874&query=bible+studies', help_text="Upload an image for the series")
+    image = models.URLField(default='https://www.freepik.com/free-photo/woman-praying-her-loved-ones_12690245.htm#fromView=search&page=1&position=49&uuid=b8c3c77b-8227-4daf-b533-f58011aa9874&query=bible+studies', help_text="Enter an image URL for the series")
     likes = models.IntegerField(default=0, help_text="Number of likes for this Series")
     thoughts=models.ManyToManyField('Reflection', related_name='series_thoughts', blank=True, help_text="Add thoughts on this series")
     date = models.DateTimeField(auto_now_add=True, help_text="Date the series was created")
@@ -50,7 +50,7 @@ class Event(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(default="Congregational meeting", max_length=200, help_text="Enter the name of the event")
     description = models.CharField(max_length=700, help_text="Enter a brief description of the event")
-    flyer = models.ImageField(upload_to='event_flyers/', max_length=500, default='https://www.freepik.com/free-photo/empty-christian-church-building_144641216.htm#fromView=search&page=1&position=1&uuid=7df8b822-77d5-4328-b319-154627617e08&query=church', help_text="Upload a flyer for the event")    
+    flyer = models.URLField(default='https://www.freepik.com/free-photo/empty-christian-church-building_144641216.htm#fromView=search&page=1&position=1&uuid=7df8b822-77d5-4328-b319-154627617e08&query=church', help_text="Enter a flyer URL for the event")
     location = models.CharField(max_length=300, help_text="Enter the location of the event")
     date= models.DateField(help_text="Enter the start date of the event")
     days = models.IntegerField(default=1, help_text="Number of days the event lasts")
@@ -67,7 +67,7 @@ class Devotion(models.Model):
     title = models.CharField(max_length=200, help_text="Enter the title of the devotional")
     Bible_verse = models.JSONField(default=dict, help_text="Enter the Bible verse as a JSON object with 'reference' and 'verse_content'")
     content = models.TextField(help_text="Enter the content of the devotional")
-    thumbnail = models.ImageField(upload_to='devotion_thumbnails/', max_length=500, null = True, help_text="Upload a thumbnail for the devotional")
+    thumbnail = models.URLField(blank=True, null=True, help_text="Enter a thumbnail URL for the devotional")
     #reflection = models.ManyToManyField('Reflection', related_name='devotion_reflections', blank=True, help_text="Add reflections for this devotional")
     date = models.DateTimeField(default=datetime.now, help_text="Date the devotional was created")
     
@@ -99,6 +99,7 @@ class Reflection(models.Model):
 class Prayer_request(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, help_text="Enter your name here")
+    phone_contact = models.CharField(max_length=30, blank=True, help_text="Optional phone number for follow-up")
     subject = models.TextField(help_text="Enter the content of your prayer request")
     date = models.DateTimeField(auto_now_add=True)
 
@@ -154,7 +155,7 @@ class GalleryImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     gallery = models.ForeignKey('Gallery', null=True, blank=True, on_delete=models.CASCADE, related_name='images', help_text="Select the gallery this image belongs to")
     title = models.CharField(max_length=200, help_text="Enter the title of the gallery image")
-    image = models.ImageField(upload_to='gallery_images/', max_length=500, help_text="Upload the gallery image")
+    image = models.URLField(help_text="Enter the gallery image URL")
     description = models.CharField(max_length=700, help_text="Enter a brief description of the gallery image")
     venue = models.CharField(max_length=300, help_text="Enter the venue where the image was taken", blank=True)
     likes = models.IntegerField(default=0, help_text="Number of likes for this gallery image")

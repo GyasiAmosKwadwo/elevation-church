@@ -97,28 +97,11 @@ class SermonSerializer(serializers.ModelSerializer):
     
 class SeriesSerializer(serializers.ModelSerializer):
     available_sermons = serializers.SerializerMethodField()
-    image_url = serializers.URLField(write_only=True, required=False)
 
     class Meta:
         model = Series
-        fields = ['id', 'title', 'description', 'image', 'image_url', 'thoughts', 'available_sermons']
+        fields = ['id', 'title', 'description', 'image', 'thoughts', 'available_sermons']
         read_only_fields = ['id']
-
-    def create(self, validated_data):
-        image_url = validated_data.pop('image_url', None)
-        instance = super().create(validated_data)
-        if image_url:
-            instance.image = image_url
-            instance.save(update_fields=['image'])
-        return instance
-
-    def update(self, instance, validated_data):
-        image_url = validated_data.pop('image_url', None)
-        instance = super().update(instance, validated_data)
-        if image_url:
-            instance.image = image_url
-            instance.save(update_fields=['image'])
-        return instance
 
     def get_available_sermons(self, obj):
         sermons = obj.sermon_series.order_by('date')
@@ -153,7 +136,7 @@ class EventSerializer(serializers.ModelSerializer):
 class DevotionSerializer(serializers.ModelSerializer):
     Bible_verse = serializers.JSONField(required=False, allow_null=True)
     reflections = ReflectionSerializer(many=True, read_only=True)
-    thumbnail = serializers.ImageField(required=False, allow_null=True)
+    thumbnail = serializers.URLField(required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = Devotion
@@ -210,7 +193,7 @@ class DevotionSerializer(serializers.ModelSerializer):
 class PrayerRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prayer_request
-        fields = ['id', 'name', 'subject', 'date']
+        fields = ['id', 'name', 'phone_contact', 'subject', 'date']
         read_only_fields = ['id', 'date']
 
 
@@ -246,28 +229,10 @@ class StaffUserSerializer(serializers.ModelSerializer):
         return user
 
 class GalleryImageSerializer(serializers.ModelSerializer):
-    image_url = serializers.URLField(write_only=True, required=False)
-
     class Meta:
         model = GalleryImage
-        fields = ['id', 'gallery', 'title', 'image', 'image_url', 'description', 'venue', 'likes', 'date']
+        fields = ['id', 'gallery', 'title', 'image', 'description', 'venue', 'likes', 'date']
         read_only_fields = ['id', 'date']
-
-    def create(self, validated_data):
-        image_url = validated_data.pop('image_url', None)
-        instance = super().create(validated_data)
-        if image_url:
-            instance.image = image_url
-            instance.save(update_fields=['image'])
-        return instance
-
-    def update(self, instance, validated_data):
-        image_url = validated_data.pop('image_url', None)
-        instance = super().update(instance, validated_data)
-        if image_url:
-            instance.image = image_url
-            instance.save(update_fields=['image'])
-        return instance
 
 
 class GallerySerializer(serializers.ModelSerializer):
@@ -415,6 +380,16 @@ class ReelSerializer(serializers.ModelSerializer):
 
 
 class SiteSettingsSerializer(serializers.ModelSerializer):
+    service_times = serializers.ListField(
+        child=serializers.CharField(),
+        required=False,
+        allow_empty=True,
+    )
+    social_links = serializers.DictField(
+        child=serializers.URLField(),
+        required=False,
+    )
+
     class Meta:
         model = SiteSettings
         fields = [

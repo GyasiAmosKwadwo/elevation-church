@@ -60,8 +60,8 @@ class ReflectionAdmin(admin.ModelAdmin):
 
 @admin.register(Prayer_request)
 class PrayerRequestAdmin(admin.ModelAdmin):
-    list_display = ('name', 'subject', 'date')
-    search_fields = ('name', 'subject')
+    list_display = ('name', 'phone_contact', 'subject', 'date')
+    search_fields = ('name', 'phone_contact', 'subject')
     list_filter = ('date',)
 
 @admin.register(Announcement)
