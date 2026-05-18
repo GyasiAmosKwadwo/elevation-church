@@ -249,17 +249,56 @@ class GallerySerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'venue', 'likes', 'date', 'images', 'image_urls']
         read_only_fields = ['id', 'date', 'images']
 
-    def create(self, validated_data):
-        image_urls = validated_data.pop('image_urls', [])
-        gallery = super().create(validated_data)
+    def _dedupe_urls(self, image_urls):
+        unique_urls = []
+        seen = set()
+        for url in image_urls:
+            if url in seen:
+                continue
+            seen.add(url)
+            unique_urls.append(url)
+        return unique_urls
+
+    def _sync_images(self, gallery, image_urls):
+        image_urls = self._dedupe_urls(image_urls)
+        existing_images = list(gallery.images.all())
+        existing_by_url = {}
+        for image in existing_images:
+            existing_by_url.setdefault(image.image, []).append(image)
+
+        keep_ids = []
         for index, url in enumerate(image_urls, start=1):
-            GalleryImage.objects.create(
+            image_title = f"{gallery.title} - Image {index}"
+            matching_images = existing_by_url.get(url, [])
+            if matching_images:
+                image = matching_images.pop(0)
+                keep_ids.append(image.id)
+                updates = {}
+                if image.title != image_title:
+                    updates['title'] = image_title
+                if image.description != gallery.description:
+                    updates['description'] = gallery.description
+                if image.venue != gallery.venue:
+                    updates['venue'] = gallery.venue
+                if updates:
+                    GalleryImage.objects.filter(pk=image.pk).update(**updates)
+                continue
+
+            created = GalleryImage.objects.create(
                 gallery=gallery,
-                title=f"{gallery.title} - Image {index}",
+                title=image_title,
                 image=url,
                 description=gallery.description,
                 venue=gallery.venue,
             )
+            keep_ids.append(created.id)
+
+        gallery.images.exclude(pk__in=keep_ids).delete()
+
+    def create(self, validated_data):
+        image_urls = validated_data.pop('image_urls', [])
+        gallery = super().create(validated_data)
+        self._sync_images(gallery, image_urls)
         return gallery
 
     def update(self, instance, validated_data):
@@ -267,15 +306,7 @@ class GallerySerializer(serializers.ModelSerializer):
         gallery = super().update(instance, validated_data)
 
         if image_urls is not None:
-            existing = gallery.images.count()
-            for offset, url in enumerate(image_urls, start=1):
-                GalleryImage.objects.create(
-                    gallery=gallery,
-                    title=f"{gallery.title} - Image {existing + offset}",
-                    image=url,
-                    description=gallery.description,
-                    venue=gallery.venue,
-                )
+            self._sync_images(gallery, image_urls)
 
         return gallery
 
