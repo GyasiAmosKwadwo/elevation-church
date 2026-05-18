@@ -14,6 +14,7 @@ from . import (
     reels,
     analytics,
     site_config,
+    bible,
 )
 
 urlpatterns = [
@@ -31,6 +32,7 @@ urlpatterns = [
     path('contributions/', include(contributions.urlpatterns)),
     path('reels/', include(reels.urlpatterns)),
     path('analytics/', include(analytics.urlpatterns)),
+    path('bible/', include(bible.urlpatterns)),
     path('site-config/', include(site_config.urlpatterns)),
 
 

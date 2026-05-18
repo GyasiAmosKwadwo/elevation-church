@@ -76,6 +76,23 @@ class Devotion(models.Model):
         return self.title
     
 
+
+class BiblePassageCache(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    reference = models.CharField(max_length=200, help_text="Bible reference, e.g. 'John 3:16'")
+    translation = models.CharField(max_length=50, default='kjv', help_text="Bible translation code, e.g. 'kjv'")
+    passage_text = models.TextField(blank=True, help_text="The fetched Bible passage text")
+    raw_response = models.JSONField(default=dict, blank=True, help_text="Raw response returned from the Bible API")
+    fetched_at = models.DateTimeField(auto_now=True, help_text="Timestamp when the passage was last fetched")
+
+    class Meta:
+        unique_together = ('reference', 'translation')
+        ordering = ['-fetched_at']
+
+    def __str__(self):
+        return f"{self.reference} ({self.translation})"
+
+
 class Reflection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, help_text="Enter your name here")

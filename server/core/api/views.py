@@ -7,6 +7,7 @@ from .models import (
     Series, 
     Event, 
     Devotion, 
+    BiblePassageCache,
     Reflection, 
     Prayer_request, 
     Announcement, 
@@ -32,6 +33,7 @@ from .serializers import (
     PrayerRequestSerializer, 
     AnnouncementSerializer,
     LiveStreamSerializer,
+    BiblePassageSerializer,
     StaffUserSerializer, 
     GallerySerializer,
     GalleryImageSerializer,
@@ -44,13 +46,14 @@ from .serializers import (
     PageConfigSerializer,
     SectionConfigSerializer,
     )
+from .bible_service import fetch_bible_passage
 from rest_framework.permissions import IsAdminUser, AllowAny, BasePermission 
 from rest_framework.pagination import PageNumberPagination
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.contrib.auth import get_user_model
 from rest_framework import parsers
 from django.utils import timezone
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Q
 from django.db.models.functions import TruncDate
 from datetime import timedelta
 
@@ -217,6 +220,98 @@ class UpdateDevotion(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminUser]
     lookup_field = 'id'
     lookup_url_kwarg = 'devotion_id'
+
+
+@extend_schema(
+    tags=['Bible'],
+    summary='Fetch a Bible passage by reference',
+    description='Return one Bible passage from the external Bible API. The reference query parameter is required.',
+    responses=BiblePassageSerializer,
+    parameters=[
+        OpenApiParameter(
+            name='reference',
+            type=str,
+            location=OpenApiParameter.QUERY,
+            description='Bible passage reference to fetch, for example "John 3:16" or "John 3".',
+            required=True,
+        ),
+        OpenApiParameter(
+            name='translation',
+            type=str,
+            location=OpenApiParameter.QUERY,
+            description='Optional Bible translation code. Default is kjv. Supported values depend on the external API.',
+            required=False,
+        ),
+    ],
+)
+class BiblePassageDetail(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = BiblePassageSerializer
+
+    def get(self, request):
+        reference = request.query_params.get('reference', '').strip()
+        translation = request.query_params.get('translation', 'kjv').strip().lower() or 'kjv'
+
+        if not reference:
+            return Response({'detail': 'The reference query parameter is required.'}, status=400)
+
+        cached_passage = BiblePassageCache.objects.filter(reference__iexact=reference, translation=translation).first()
+        if cached_passage is not None:
+            serializer = BiblePassageSerializer(cached_passage)
+            return Response(serializer.data)
+
+        passage_data = fetch_bible_passage(reference, translation)
+        cached_passage = BiblePassageCache.objects.create(
+            reference=reference,
+            translation=translation,
+            passage_text=passage_data['passage_text'],
+            raw_response=passage_data['raw_response'],
+        )
+        serializer = BiblePassageSerializer(cached_passage)
+        return Response(serializer.data)
+
+
+@extend_schema(
+    tags=['Bible'],
+    summary='Search cached Bible passages',
+    description='Search the locally cached Bible passage results by reference or passage text. Use query or reference to filter results.',
+    responses=BiblePassageSerializer,
+    parameters=[
+        OpenApiParameter(
+            name='query',
+            type=str,
+            location=OpenApiParameter.QUERY,
+            description='Text search term for passage content or reference. Optional.',
+            required=False,
+        ),
+        OpenApiParameter(
+            name='reference',
+            type=str,
+            location=OpenApiParameter.QUERY,
+            description='Partial or full Bible reference to filter cached passages. Optional.',
+            required=False,
+        ),
+    ],
+)
+class BiblePassageSearch(generics.ListAPIView):
+    queryset = BiblePassageCache.objects.order_by('-fetched_at')
+    serializer_class = BiblePassageSerializer
+    permission_classes = [AllowAny]
+    pagination_class = PageNumberPagination
+    PageNumberPagination.page_size = 20
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        query = self.request.query_params.get('query', '').strip()
+        reference = self.request.query_params.get('reference', '').strip()
+
+        if reference:
+            queryset = queryset.filter(reference__icontains=reference)
+        if query:
+            queryset = queryset.filter(Q(reference__icontains=query) | Q(passage_text__icontains=query))
+
+        return queryset
+
 
 #Reflections
 @extend_schema(tags=['Reflections'])
