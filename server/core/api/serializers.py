@@ -8,6 +8,7 @@ from .models import (
     Series,
     Event,
     Devotion,
+    BiblePassageCache,
     Reflection,
     Prayer_request,
     Announcement,
@@ -31,6 +32,20 @@ from django.contrib.auth import get_user_model
 class BibleVerseSerializer(serializers.Serializer):
     reference = serializers.CharField(max_length=300, required=False, allow_blank=True, allow_null=True, help_text="Bible verse reference, e.g., 'John 10:30'")
     verse_content = serializers.CharField(required=False, allow_blank=True, allow_null=True, help_text="The content of the Bible verse")
+
+
+class BiblePassageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BiblePassageCache
+        fields = [
+            'id',
+            'reference',
+            'translation',
+            'passage_text',
+            'raw_response',
+            'fetched_at',
+        ]
+        read_only_fields = ['id', 'translation', 'passage_text', 'raw_response', 'fetched_at']
 
 
 class ReflectionSerializer(serializers.ModelSerializer):
