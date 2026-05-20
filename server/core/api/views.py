@@ -47,7 +47,7 @@ from .serializers import (
     SectionConfigSerializer,
     )
 from .bible_service import fetch_bible_passage
-from rest_framework.permissions import IsAdminUser, AllowAny, BasePermission 
+from rest_framework.permissions import IsAdminUser, AllowAny, BasePermission, SAFE_METHODS
 from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.contrib.auth import get_user_model
@@ -462,8 +462,13 @@ class SingletonRetrieveUpdateMixin(generics.RetrieveUpdateAPIView):
 @extend_schema(tags=['Site Config'], description="Get and update global site settings.")
 class RetrieveUpdateSiteSettings(SingletonRetrieveUpdateMixin):
     serializer_class = SiteSettingsSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [AllowAny]
     singleton_model = SiteSettings
+
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [AllowAny()]
+        return [IsAdminUser()]
 
 
 @extend_schema(tags=['Site Config'], description="Get and update global theme settings.")

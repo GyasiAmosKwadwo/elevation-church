@@ -25,6 +25,10 @@ class Resource(models.Model):
     name = models.CharField(max_length=300, help_text="Enter the name of the resource")
     purchase_link = models.URLField(help_text="Enter the purchase link of the resource")
     price = models.DecimalField(max_digits=8, decimal_places=2, help_text="Enter the price of the resource")
+    category = models.CharField(max_length=120, blank=True, default="", help_text="Enter the category of the resource, e.g. book, soap, cream")
+    description = models.TextField(blank=True, default="", help_text="Enter a description of the resource")
+    image_url = models.URLField(blank=True, default="", help_text="Enter an image URL for the resource")
+    is_available = models.BooleanField(default=True, help_text="Whether the resource is currently available for purchase")
 
     def __str__(self):
         return self.name
