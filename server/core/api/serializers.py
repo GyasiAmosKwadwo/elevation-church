@@ -57,7 +57,7 @@ class ReflectionSerializer(serializers.ModelSerializer):
 class ResourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resource
-        fields = ['id', 'name', 'purchase_link', 'price']
+        fields = ['id', 'name', 'purchase_link', 'price', 'category', 'description', 'image_url', 'is_available']
         read_only_fields = ['id']
 
 class SermonSerializer(serializers.ModelSerializer):
@@ -432,8 +432,10 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
         allow_empty=True,
     )
     social_links = serializers.DictField(
-        child=serializers.URLField(),
+        child=serializers.URLField(required=False, allow_blank=True),
         required=False,
+        allow_null=True,
+        default=dict,
     )
 
     class Meta:

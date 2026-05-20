@@ -38,6 +38,12 @@ class SiteConfigApiTests(APITestCase):
         self.assertTrue(SiteSettings.objects.filter(pk=1).exists())
         self.assertTrue(ThemeSettings.objects.filter(pk=1).exists())
 
+    def test_site_settings_get_is_public(self):
+        response = self.client.get(self.settings_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('church_name', response.data)
+        self.assertIn('social_links', response.data)
+
     def test_admin_can_update_site_settings(self):
         self.client.force_authenticate(self.admin)
         payload = {'church_name': 'Elevation Church HQ'}
