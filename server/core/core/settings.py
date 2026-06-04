@@ -188,11 +188,12 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
     "UPDATE_LAST_LOGIN": False,
+    'TOKEN_OBTAIN_SERIALIZER': 'api.serializers.EmailTokenObtainPairSerializer',
 }
 
 
 DJOSER = {
-    'LOGIN_FIELD': 'username',  # or 'email' if using email login
+    'LOGIN_FIELD': 'email',  # or 'email' if using email login
     'USER_CREATE_PASSWORD_RETYPE': True,
     'USERNAME_CHANGED_EMAIL_CONFIRMATION': True,
     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
@@ -204,12 +205,19 @@ DJOSER = {
     'ACTIVATION_URL': 'activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SERIALIZERS': {
+        'token_create': 'api.serializers.EmailTokenCreateSerializer',
+
         'user_create': 'djoser.serializers.UserCreateSerializer',
         'user': 'djoser.serializers.UserSerializer',
         'current_user': 'djoser.serializers.UserSerializer',
         'user_delete': 'djoser.serializers.UserDeleteSerializer',
     },
 }
+
+AUTHENTICATION_BACKENDS = [
+    'api.auth_backends.EmailOrUsernameModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 
 
