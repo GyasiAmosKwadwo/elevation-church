@@ -1,4 +1,7 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from djoser.serializers import TokenCreateSerializer as DjoserTokenCreateSerializer
+from django.conf import settings
 from drf_spectacular.utils import extend_schema_field
 from django.utils import timezone
 from decimal import Decimal
@@ -27,6 +30,23 @@ from .models import (
 from datetime import date
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+
+
+class EmailTokenCreateSerializer(DjoserTokenCreateSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields.pop('username', None)
+        self.fields['email'] = serializers.EmailField(required=True)
+        self.fields['password'] = serializers.CharField(required=True, style={'input_type': 'password'})
+
+
+class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'email'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'] = serializers.EmailField(write_only=True)
+        self.fields['password'] = serializers.CharField(write_only=True, style={'input_type': 'password'})
 
 
 class BibleVerseSerializer(serializers.Serializer):
